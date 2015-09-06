@@ -1,0 +1,24 @@
+******************************************************************************
+Static model
+******************************************************************************
+
+Module ``infrastructure``
+==============================================================================
+
+.. automodule:: sphinxcontrib.traceables.infrastructure
+   :members:
+   :undoc-members:
+
+Module ``traceables``
+==============================================================================
+
+.. automodule:: sphinxcontrib.traceables.traceables
+   :members:
+   :undoc-members:
+
+Module ``graph``
+==============================================================================
+
+.. automodule:: sphinxcontrib.traceables.graph
+   :members:
+   :undoc-members:
