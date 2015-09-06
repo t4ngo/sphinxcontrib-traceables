@@ -1,0 +1,12 @@
+
+.. traceable:: TRACEABLE1
+  :title: Traceable 1
+  :random-attribute: Some random value
+
+.. traceable:: TRACEABLE2
+  :parent: TRACEABLE1
+
+  Content of TRACEABLE2.
+  This traceable is related to :traceable:`TRACEABLE1`.
+
+The traceable :traceable:`NONEXISTENT` doesn't exist.

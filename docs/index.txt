@@ -1,0 +1,79 @@
+During parsing of source files
+==============================================================================
+
+This extension adds the following directives and roles which are used by
+Sphinx during parsing of source.
+
+Traceable directive
+------------------------------------------------------------------------------
+
+A traceable directive is used to create a new traceable item and define
+its attributes. It must be given a unique tag so that it can be referenced
+from elsewhere in the documentation. It may also be given attributes and
+content text.
+
+Example of a traceable directive:
+
+.. code-block:: rest
+
+  .. traceable:: TAG
+    :title: Lorem ipsum
+
+    Lorem ipsum dolor sit...
+
+When Sphinx encounters a traceable directive during parsing, a
+:class:`TraceableDirective` is called to process the directive. It creates
+a target node, so that the traceable can be referenced from elsewhere in the
+documentation, and a presentation node, to show the traceable's definition
+at the directive's location in the documentation.
+
+The attributes defined in the traceable directive may contain references
+to other traceables which cannot be resolved until the entire doctree
+has been resolved. The attributes are therefore stored in a
+:class:`traceable_attribute_list` node for later processing.
+
+Traceable role
+------------------------------------------------------------------------------
+
+Example of a traceable role:
+
+.. code-block:: rest
+
+  Lorem ipsum :traceable:`TAG` dolor sit...
+
+When Sphinx encounters a traceable role during parsing, a
+:class:`traceable_xref` cross reference node is created. Later on that
+note will be replaced by an appropriate final node.
+
+After doctree has been resolved
+==============================================================================
+
+This extension registers the :func:`process_traceables_in_doctree` to be
+called when the ``doctree-resolved`` event fires. That callback function
+invokes the :class:`TraceablesProcessor` to process the main business logic
+of this extension.
+
+The :class:`TraceablesProcessor` performs the following activities:
+
+ #. Collect all traceables defined throughout the documentation
+ #. Analyze relationships between traceables; this is done with help from
+    the :class:`RelationshipManager` class
+ #. Process :class:`traceable_attribute_list` nodes; these are part of
+    traceable directives
+ #. Resolve :class:`traceable_xref` cross reference nodes; these are
+    created by traceable roles, amongst other possible sources
+
+Purging of old state
+==============================================================================
+
+This extension registers the :func:`purge_traceables` to be
+called when the ``env-purge-doc`` event fires. That callback function
+removes the relevant data from the :class:`TraceablesStorage`.
+
+
+----
+
+traceable_graph(nodes.General, nodes.Element):
+TraceableGraphDirective(Directive):
+GraphProcessor
+
