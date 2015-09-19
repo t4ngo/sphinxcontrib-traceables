@@ -1,15 +1,22 @@
 .. _contents:
 
+******************************************************************************
+Sphinxcontrib-traceables documentation
+******************************************************************************
+
+:Release: |release|
+:Date:    |today|
+
 Contents
 ===============================================================================
 
 .. toctree::
    :maxdepth: 2
 
-   userguide
-   dynamicmodel
-   staticmodel
-
+   gettingstarted
+   usage
+   internals
+   license
 
 Indices and tables
 ===============================================================================
@@ -17,4 +24,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-* :ref:`glossary`

@@ -1,3 +1,9 @@
+"""
+The ``traceables`` module: Core traceables functionality
+============================================================================
+
+"""
+
 
 import collections
 import textwrap

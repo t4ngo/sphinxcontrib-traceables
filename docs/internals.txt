@@ -1,0 +1,11 @@
+******************************************************************************
+Extension internals
+******************************************************************************
+
+.. toctree::
+   :maxdepth: 2
+
+   dynamicmodel
+   internals/infrastructure
+   internals/traceables
+   internals/graph

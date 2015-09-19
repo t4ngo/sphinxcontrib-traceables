@@ -1,3 +1,8 @@
+"""
+The ``graph`` module: Visualization of traceables
+============================================================================
+
+"""
 
 import textwrap
 from docutils import nodes

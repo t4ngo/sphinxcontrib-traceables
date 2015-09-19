@@ -1,3 +1,8 @@
+"""
+The ``infrastructure`` module: Infrastructure for processing traceables
+============================================================================
+
+"""
 
 import collections
 import textwrap
