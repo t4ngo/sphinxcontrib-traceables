@@ -25,7 +25,6 @@ setup(
                       "documentation",
       author        = "Christo Butcher",
       author_email  = "",
-      license       = "LICENSE.txt",
       url           = "https://github.com/t4ngo/sphinxcontrib.traceables",
       long_description = read("README.rst"),
       packages      = find_packages(),
@@ -40,8 +39,7 @@ setup(
                      "Intended Audience :: Information Technology",
                      "Intended Audience :: Science/Research",
                      "Intended Audience :: System Administrators",
-                     "License :: OSI Approved :: "
-                        "GNU General Public License v3 or later (GPLv3+)",
+                     "License :: OSI Approved :: Apache Software License",
                      "Natural Language :: English",
                      "Operating System :: OS Independent",
                      "Programming Language :: Python",
