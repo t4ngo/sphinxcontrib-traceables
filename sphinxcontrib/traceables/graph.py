@@ -49,7 +49,7 @@ class GraphProcessor(ProcessorBase):
 
     def __init__(self, app):
         ProcessorBase.__init__(self, app)
-        self.graph_styles = default_graph_styles
+        self.graph_styles = default_graph_styles.copy()
         self.graph_styles.update(self.config.traceables_graph_styles)
 
     def process_doctree(self, doctree, docname):
