@@ -34,3 +34,8 @@ def test_basics(app, status, warning):
             break
     else:
         assert False, "Child's parent field not found!"
+
+    # Verify that a warning is emitted for unknown traceable tag.
+    assert (warning.getvalue().find(
+        "WARNING: Traceables: no traceable with tag"
+        " 'NONEXISTENT' found!") > 0)

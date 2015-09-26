@@ -1,13 +1,13 @@
 
-.. traceable:: TRACEABLE1
-  :title: Traceable 1
+.. traceable:: SAGITTA
+  :title: Sagitta
   :random-attribute: Some random value
 
-.. traceable:: TRACEABLE2
-  :parent: TRACEABLE1
+.. traceable:: AQUILA
+  :parent: SAGITTA
 
-  Content of TRACEABLE2.
-  This traceable is related to :traceable:`TRACEABLE1`.
+  Content of AQUILA.
+  This traceable is related to :traceable:`SAGITTA`.
 
 .. traceable-graph::
-  :start: TRACEABLE1
+  :start: SAGITTA
