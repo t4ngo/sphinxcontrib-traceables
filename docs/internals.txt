@@ -8,4 +8,5 @@ Extension internals
    dynamicmodel
    internals/infrastructure
    internals/traceables
+   internals/matrix
    internals/graph

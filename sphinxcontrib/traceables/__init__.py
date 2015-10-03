@@ -1,6 +1,7 @@
 
 import infrastructure
 import traceables
+import matrix
 import graph
 
 
@@ -14,6 +15,7 @@ def setup(app):
     # Allow extension parts to set themselves up.
     traceables.infrastructure.setup(app)
     traceables.traceables.setup(app)
+    traceables.matrix.setup(app)
     traceables.graph.setup(app)
 
     # Register business logic of extension parts. This is done explicitly
@@ -23,6 +25,7 @@ def setup(app):
         traceables.traceables.RelationshipsProcessor,
         traceables.traceables.AttributeListsProcessor,
         traceables.traceables.XrefProcessor,
+        traceables.matrix.ListProcessor,
         traceables.graph.GraphProcessor,
     ])
 

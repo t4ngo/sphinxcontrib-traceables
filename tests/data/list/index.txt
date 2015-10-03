@@ -1,0 +1,13 @@
+
+.. traceable:: SAGITTA
+  :title: Sagitta
+  :color: blue
+  :version: 1.0
+
+.. traceable-list::
+
+.. traceable:: AQUILA
+  :title: Aquila
+  :parent: SAGITTA
+  :color: red
+  :version: 0.8
