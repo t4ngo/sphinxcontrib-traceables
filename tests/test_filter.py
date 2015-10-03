@@ -21,11 +21,6 @@ class FilterVisitor(ast.NodeVisitor):
     def __init__(self, identifier_values):
         self.identifier_values = identifier_values
 
-    def parse_and_visit(self, filter_input):
-        self.input = filter_input
-        syntax_tree = ast.parse(filter_input)
-        return self.visit(syntax_tree)
-
     def visit_Module(self, node):
         if len(node.body) != 1:
             raise FilterError("Filter cannot contain multiple expressions")
@@ -42,11 +37,14 @@ class FilterVisitor(ast.NodeVisitor):
             raise FilterError(node, "Invalid identifier: {0}"
                                     .format(identifier))
 
+    def visit_Num(self, node):
+        return node.n
+
     def visit_Str(self, node):
         return node.s
 
-    def visit_Num(self, node):
-        return node.n
+    def visit_List(self, node):
+        return tuple(self.visit(element) for element in node.elts)
 
     def visit_Compare(self, node):
         if len(node.ops) != 1:
@@ -57,9 +55,18 @@ class FilterVisitor(ast.NodeVisitor):
         operator = node.ops[0]
         right = self.visit(node.comparators[0])
 
+        # Operators described here:
+        # https://greentreesnakes.readthedocs.org/en/latest/nodes.html#Compare
         if   isinstance(operator, ast.Eq):     return left == right
         elif isinstance(operator, ast.NotEq):  return left != right
+        elif isinstance(operator, ast.Lt):     return left < right
+        elif isinstance(operator, ast.LtE):    return left <= right
+        elif isinstance(operator, ast.Gt):     return left > right
+        elif isinstance(operator, ast.GtE):    return left >= right
+        elif isinstance(operator, ast.In):     return left in right
+        elif isinstance(operator, ast.NotIn):  return left not in right
         else:
+            # Unsupported operators: ast.Is, ast.IsNot
             raise FilterError(node, "Invalid operator of type {0}"
                                     .format(operator.__class__.__name__))
 
@@ -76,15 +83,9 @@ class TraceablesFilter(object):
     def filter(self, expression_string):
         expression_tree = ast.parse(expression_string)
         matches = []
-        try:
-            for traceable in self.traceables:
-                if self.filter_traceable(expression_tree, traceable):
-                    matches.append(traceable)
-        except FilterError, error:
-            message = self.format_error(error, expression_string)
-            error.args = (message,)
-            error.message = message
-            raise
+        for traceable in self.traceables:
+            if self.filter_traceable(expression_tree, traceable):
+                matches.append(traceable)
         return matches
 
     def filter_traceable(self, expression_tree, traceable):
@@ -94,16 +95,6 @@ class TraceablesFilter(object):
         visitor = FilterVisitor(identifier_values)
         return visitor.visit(expression_tree)
 
-    def format_error(self, error, expression_string):
-        offset = error.node.col_offset
-        input_string = expression_string[offset:]
-        if offset > 0:
-            input_string = "... " + input_string
-        if len(input_string) > 12:
-            input_string = input_string[:8].strip() + " ..."
-        return ('{0} ("{1}")'
-                .format(error.message, input_string))
-
 
 def test_filter():
     identifier_values = {
@@ -111,7 +102,9 @@ def test_filter():
         "version": 1.2,
     }
     visitor = FilterVisitor(identifier_values)
-    pv = visitor.parse_and_visit
+    def pv(expression_input):
+        expression_tree = ast.parse(expression_input)
+        return visitor.visit(expression_tree)
 
     # Operator "=="
     assert True  == pv("color == 'red'")
@@ -126,9 +119,38 @@ def test_filter():
     assert False == pv("color != 'red'")
     assert True  == pv("color != 'blue'")
 
-#    # Operator ">"
-#    assert False == pv("version > 2")
-#    assert True  == pv("version > 1.1")
+    # Operator ">"
+    assert False == pv("version > 2")
+    assert True  == pv("version > 1.1")
+
+
+class FilterTester(object):
+
+    def __init__(self, traceables_input):
+        self.traceables = []
+        for tag, attributes in traceables_input:
+            self.traceables.append(Traceable(None, tag))
+            self.traceables[-1].attributes = attributes
+        self.filter = TraceablesFilter(self.traceables)
+
+    def verify(self, expression, expected_tags):
+        matches = self.filter.filter(expression)
+        matched_tags = [traceable.tag for traceable in matches]
+        unexpected_tags = [tag for tag in matched_tags
+                           if tag not in expected_tags]
+        missing_tags = [tag for tag in expected_tags
+                        if tag not in matched_tags]
+        message_parts = []
+        if unexpected_tags:
+            message_parts.append("Unexpected but matched tag(s): {0}"
+                                 .format(", ".join(unexpected_tags)))
+        if missing_tags:
+            message_parts.append("Expected but not matched tag(s): {0}"
+                                 .format(", ".join(missing_tags)))
+        if message_parts:
+            message_parts.insert(0, "Filter expression {0!r}"
+                                    .format(expression))
+            raise Exception("; ".join(message_parts))
 
 
 def test_filter_traceables():
@@ -138,12 +160,9 @@ def test_filter_traceables():
         ("AQUILA",     {"title": "Aquila", "parent": "SAGITTA",
                         "color": "red", "version": 0.8}),
     ]
-
-    traceables = []
-    for tag, attributes in traceables_input:
-        traceables.append(Traceable(None, tag))
-        traceables[-1].attributes = attributes
-
-    filter = TraceablesFilter(traceables)
-    for traceable in filter.filter("color > 'blue'"):
-        print traceable, traceable.attributes
+    tester = FilterTester(traceables_input)
+    tester.verify("color == 'blue'", ["SAGITTA"])
+    tester.verify("color == 'red'", ["AQUILA"])
+    tester.verify("color >= 'blue'", ["SAGITTA", "AQUILA"])
+    tester.verify("version < 4", ["SAGITTA", "AQUILA"])
+    tester.verify("color in ['blue',' green']", ["SAGITTA"])
