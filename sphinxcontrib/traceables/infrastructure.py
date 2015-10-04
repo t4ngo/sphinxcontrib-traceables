@@ -15,6 +15,8 @@ from sphinx.environment import NoUri
 from sphinx.util.compat import make_admonition
 from sphinx.util.nodes import make_refnode
 
+from .filter import ExpressionMatcher
+
 
 #===========================================================================
 # Information storage classes
@@ -163,6 +165,29 @@ class ProcessorBase(object):
 
     def process_doctree(self, doctree, docname):
         pass
+
+
+#===========================================================================
+# Filtering class
+
+class TraceablesFilter(object):
+
+    def __init__(self, traceables):
+        self.traceables = traceables
+
+    def filter(self, expression_string):
+        matcher = ExpressionMatcher(expression_string)
+        matching_traceables = []
+        for traceable in self.traceables:
+            if self.traceable_matches(matcher, traceable):
+                matching_traceables.append(traceable)
+        return matching_traceables
+
+    def traceable_matches(self, matcher, traceable):
+        identifier_values = {}
+        identifier_values.update(traceable.attributes)
+        identifier_values["tag"] = traceable.tag
+        return matcher.matches(identifier_values)
 
 
 #===========================================================================
