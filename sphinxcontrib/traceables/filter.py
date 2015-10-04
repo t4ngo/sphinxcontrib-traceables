@@ -25,7 +25,10 @@ class ExpressionMatcher(object):
 
     def __init__(self, expression_string):
         self.expression_string = expression_string
-        self.expression_tree = ast.parse(expression_string)
+        try:
+            self.expression_tree = ast.parse(expression_string)
+        except SyntaxError, error:
+            raise FilterError(None, "Invalid filter syntax")
 
     def matches(self, identifier_values):
         visitor = FilterVisitor(identifier_values)
@@ -41,8 +44,10 @@ class FilterVisitor(ast.NodeVisitor):
         self.identifier_values = identifier_values
 
     def visit_Module(self, node):
-        if len(node.body) != 1:
-            raise FilterError("Filter cannot contain multiple expressions")
+        if len(node.body) == 0:
+            raise FilterError(node, "Filter invalid because it is empty")
+        elif len(node.body) != 1:
+            raise FilterError(node, "Filter invalid because has multiple expressions")
         return self.visit(node.body[0])
 
     def visit_Expr(self, node):
