@@ -4,7 +4,10 @@
   :color: blue
   :version: 1.0
 
-.. traceable-list::
+.. toctree::
+
+   list_basic
+   list_filter
 
 .. traceable:: AQUILA
   :title: Aquila
