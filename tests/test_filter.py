@@ -2,40 +2,85 @@
 import os
 import ast
 from xml.etree import ElementTree
+from nose.tools import assert_raises
 from utils import with_app, pretty_print_xml
-from sphinxcontrib.traceables.filter import FilterVisitor, ExpressionMatcher
+from sphinxcontrib.traceables.filter import (FilterVisitor, FilterError,
+                                             ExpressionMatcher)
 from sphinxcontrib.traceables.infrastructure import Traceable, TraceablesFilter
 
 
 #=============================================================================
 # Tests for filter expression handling
 
-def test_filter():
+def test_filter_syntax():
     identifier_values = {
         "color": "red",
         "version": 1.2,
     }
-    visitor = FilterVisitor(identifier_values)
-    def pv(expression_input):
-        expression_tree = ast.parse(expression_input)
-        return visitor.visit(expression_tree)
+    def match(expression_input):
+        matcher = ExpressionMatcher(expression_input)
+        return matcher.matches(identifier_values)
+
+    assert_raises(FilterError, match, "invalid syntax")
+    assert_raises(FilterError, match, "")
+    assert_raises(FilterError, match, "color\nversion")
+    assert_raises(FilterError, match, "color + version")
+    assert_raises(FilterError, match, "color, version")
+    assert_raises(FilterError, match, "unknown_identifier")
+
+
+def test_filter_operators():
+    identifier_values = {
+        "color": "red",
+        "version": 1.2,
+    }
+    def match(expression_input):
+        matcher = ExpressionMatcher(expression_input)
+        return matcher.matches(identifier_values)
 
     # Operator "=="
-    assert True  == pv("color == 'red'")
-    assert False == pv("color == 'blue'")
-    assert True  == pv("'red' == color")
-    assert False == pv("'blue' == color")
-    assert True  == pv("'red' == 'red'")
-    assert False == pv("'blue' == 'red'")
-    assert False == pv("'blue' == 4.2")
+    assert True  == match("color == 'red'")
+    assert False == match("color == 'blue'")
+    assert True  == match("'red' == color")
+    assert False == match("'blue' == color")
+    assert True  == match("'red' == 'red'")
+    assert False == match("'blue' == 'red'")
+    assert False == match("'blue' == 4.2")
 
     # Operator "!="
-    assert False == pv("color != 'red'")
-    assert True  == pv("color != 'blue'")
+    assert False == match("color != 'red'")
+    assert True  == match("color != 'blue'")
 
     # Operator ">"
-    assert False == pv("version > 2")
-    assert True  == pv("version > 1.1")
+    assert False == match("version > 2")
+    assert True  == match("version > 1.1")
+
+    # Operator ">="
+    assert False == match("version >= 2")
+    assert True  == match("version >= 1.2")
+
+    # Operator "<"
+    assert True  == match("version < 2")
+    assert False == match("version < 1.1")
+
+    # Operator "<="
+    assert True  == match("version <= 1.2")
+    assert False == match("version <= 1.1")
+
+    # Operator "in"
+    assert False == match("version in []")
+    assert True  == match("version in [1.1, 1.2, -4]")
+
+    # Operator "not in"
+    assert True  == match("version not in []")
+    assert False == match("version not in [1.1, 1.2, -4]")
+
+    # Valid but unsupported operator
+    assert_raises(FilterError, match, "version is 1.2")
+    assert_raises(FilterError, match, "1.0 < version <= 1.2")
+
+    # Invalid operator, syntax error
+    assert_raises(FilterError, match, "version INVALID 1.2")
 
 
 #=============================================================================
