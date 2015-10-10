@@ -30,9 +30,12 @@ class TraceablesStorage(object):
 
     def analyze_relationship_types(self):
         self.relationship_types = self.config.traceables_relationships
+        self.relationship_opposites = {}
         self.relationship_directions = {}
         for relationship_type in self.relationship_types:
             primary, secondary, directional = relationship_type
+            self.relationship_opposites[primary] = secondary
+            self.relationship_opposites[secondary] = primary
             if directional:
                 self.relationship_directions[primary] = 1
                 self.relationship_directions[secondary] = -1
@@ -72,6 +75,9 @@ class TraceablesStorage(object):
             self.add_traceable(traceable)
         return traceable
 
+    def get_relationship_opposite(self, name):
+        return self.relationship_opposites[name]
+
     def get_relationship_direction(self, name):
         return self.relationship_directions[name]
 
@@ -102,6 +108,13 @@ class Traceable(object):
             arguments.append("unresolved")
         return "<{0}({1})>".format(self.__class__.__name__,
                                    ", ".join(arguments))
+
+    def __lt__(self, other):
+        if not isinstance(other, Traceable):
+            raise ValueError("Cannot compare Traceable instance with other"
+                             " type {0}"
+                             .format(other.__class__.__name__))
+        return self.tag < other.tag
 
     @property
     def title(self):
