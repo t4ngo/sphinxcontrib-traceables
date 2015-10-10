@@ -26,6 +26,7 @@ def setup(app):
         traceables.traceables.AttributeListsProcessor,
         traceables.traceables.XrefProcessor,
         traceables.matrix.ListProcessor,
+        traceables.matrix.MatrixProcessor,
         traceables.graph.GraphProcessor,
     ])
 
