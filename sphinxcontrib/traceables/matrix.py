@@ -155,12 +155,10 @@ class MatrixProcessor(ProcessorBase):
 
             for boolean in boolean_row:
                 entry = nodes.entry(); row += entry
-                if not boolean:
+                if boolean:
+                    entry += traceable_checkmark()
+                else:
                     continue
-#                yes_symbol = u"\u2714"
-                yes_symbol = u"x"
-                paragraph = nodes.paragraph(yes_symbol, yes_symbol)
-                entry += paragraph
 
         return table
 
@@ -218,6 +216,10 @@ class traceable_matrix(nodes.General, nodes.Element):
     pass
 
 
+class traceable_checkmark(nodes.inline):
+    pass
+
+
 #===========================================================================
 # Directives
 
@@ -260,8 +262,24 @@ class TraceableMatrixDirective(Directive):
 #===========================================================================
 # Setup and register extension
 
+def visit_traceable_checkmark_html(self, node):
+    self.body.append(u"\u2714")
+    raise nodes.SkipNode
+
+def visit_traceable_checkmark_latex(self, node):
+    self.body.append(r"\checkmark")
+    raise nodes.SkipNode
+
+
+#===========================================================================
+# Setup and register extension
+
 def setup(app):
     app.add_node(traceable_list)
     app.add_node(traceable_matrix)
+    app.add_node(traceable_checkmark,
+                 html=(visit_traceable_checkmark_html, None),
+                 latex=(visit_traceable_checkmark_latex, None))
     app.add_directive("traceable-list", TraceableListDirective)
     app.add_directive("traceable-matrix", TraceableMatrixDirective)
+    app.add_latex_package("amssymb")  # Needed for "\checkmark" symbol.
