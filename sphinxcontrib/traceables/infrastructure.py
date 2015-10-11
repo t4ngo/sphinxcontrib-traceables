@@ -4,8 +4,9 @@ The ``infrastructure`` module: Infrastructure for processing traceables
 
 """
 
+import os
+import glob
 import collections
-import textwrap
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from sphinx import addnodes
@@ -14,6 +15,7 @@ from sphinx.roles import XRefRole
 from sphinx.environment import NoUri
 from sphinx.util.compat import make_admonition
 from sphinx.util.nodes import make_refnode
+from sphinx.util.osutil import copyfile
 
 from .filter import ExpressionMatcher
 
@@ -206,6 +208,28 @@ class TraceablesFilter(object):
 #===========================================================================
 # Signal handling functions
 
+def add_static_files(app):
+    base_directory = os.path.dirname(__file__)
+    static_directory = os.path.join(base_directory, "static")
+
+    stylesheet_glob = os.path.join(static_directory, "*.css")
+    for stylesheet_path in glob.glob(stylesheet_glob):
+        basename = os.path.basename(stylesheet_path)
+        app.add_stylesheet(basename)
+
+def copy_static_files(app, exception):
+    if app.builder.name != "html" or exception:
+        return
+
+    base_directory = os.path.dirname(__file__)
+    static_directory = os.path.join(base_directory, "static")
+
+    for filename in os.listdir(static_directory):
+        source_path = os.path.join(static_directory, filename)
+        destination_path = os.path.join(app.builder.outdir, "_static",
+                                        filename)
+        copyfile(source_path, destination_path)
+
 def process_doctree(app, doctree, docname):
     processor_manager = ProcessorManager(app)
     processor_manager.process_doctree(doctree, docname)
@@ -219,5 +243,7 @@ def purge_docname(app, env, docname):
 # Setup and register extension
 
 def setup(app):
+    app.connect("builder-inited", add_static_files)
+    app.connect("build-finished", copy_static_files)
     app.connect("doctree-resolved", process_doctree)
     app.connect("env-purge-doc", purge_docname)
