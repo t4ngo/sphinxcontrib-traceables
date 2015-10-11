@@ -5,8 +5,10 @@ The ``matrix`` module: Matrices and lists of traceables
 """
 
 import types
+import six
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
+from sphinx.util.texescape import tex_escape_map
 
 from .infrastructure import ProcessorBase, TraceablesFilter
 
@@ -161,7 +163,13 @@ class MatrixProcessor(ProcessorBase):
                 else:
                     continue
 
-        return table
+        container = traceable_matrix_crosstable()
+        container += table
+        container["relationships"] = (relationship.capitalize(),
+                                      opposite.capitalize())
+        container["boolean_matrix"] = boolean_matrix
+        container["secondaries"] = secondaries
+        return container
 
     def create_bullet_list(self, matrix, relationship, opposite, docname):
         new_node = nodes.bullet_list()
@@ -217,6 +225,10 @@ class traceable_matrix(nodes.General, nodes.Element):
     pass
 
 
+class traceable_matrix_crosstable(nodes.General, nodes.Element):
+    pass
+
+
 class traceable_checkmark(nodes.General, nodes.Element):
     pass
 
@@ -261,7 +273,7 @@ class TraceableMatrixDirective(Directive):
 
 
 #===========================================================================
-# Setup and register extension
+# Node visitor functions
 
 def visit_passthrough(self, node):
     pass
@@ -271,9 +283,54 @@ def depart_passthrough(self, node):
 
 passthrough = (visit_passthrough, depart_passthrough)
 
+def visit_traceable_matrix_crosstable_latex(self, node):
+    relationship, opposite = node["relationships"]
+    boolean_matrix = node["boolean_matrix"]
+    secondaries = node["secondaries"]
+#    max_columns = node.get("max_columns")
+#    if max_columns:
+#        secondary_sets = [[]]
+#        for secondary in secondaries:
+#            if len(secondary_sets[-1]) >= max_columns:
+#                secondary_sets.append([])
+#            secondary_sets[-1].append(secondary)
+#    num_columns = min(len(secondaries), max_columns)
+
+    lines = []
+#    lines.append(r"\begin{table} \centering")
+    lines.append(r"\begin{longtable}{@{} cl*{%d}c @{}}" % len(secondaries))
+    lines.append(r" & & \multicolumn{%d}{c}{%s} \\[2ex]"
+                 % (len(secondaries), latex_escape(relationship)))
+    headers = [r"\rotatebox{90}{%s}"
+               % latex_escape(head.tag) for head in secondaries]
+    lines.append(r" & & " + r" & ".join(headers) + r"\\")
+    lines.append(r"\cmidrule{2-%d}" % (len(secondaries) + 2))
+    for index, (traceable, boolean_row) in enumerate(boolean_matrix):
+        if index > 0:
+            # Add horizontal rule above all but the first row.
+            lines.append(r"\cmidrule[0.05pt]{2-%d}" % (len(secondaries) + 2))
+        checkmarks = [r"\checkmark" if boolean else ""
+                      for boolean in boolean_row]
+        if index == 0:
+            # Add opposite relationship name only once.
+            lines.append(r"\rotatebox{90}{\llap{%s}}"
+                         % latex_escape(opposite))
+        lines.append(r" & %s & " % latex_escape(traceable.tag)
+                     + r" & ".join(checkmarks)
+                     + r"\\")
+    lines.append(r"\cmidrule{2-%d}" % (len(secondaries) + 2))
+    lines.append(r"\end{longtable}")
+#    lines.append(r"\end{table}")
+
+    self.body.append("\n".join(lines))
+    raise nodes.SkipNode
+
 def visit_traceable_checkmark_latex(self, node):
     self.body.append(r"\checkmark")
     raise nodes.SkipNode
+
+def latex_escape(text):
+    return six.text_type(text).translate(tex_escape_map)
 
 
 #===========================================================================
@@ -282,9 +339,13 @@ def visit_traceable_checkmark_latex(self, node):
 def setup(app):
     app.add_node(traceable_list)
     app.add_node(traceable_matrix)
+    app.add_node(traceable_matrix_crosstable,
+                 html=passthrough,
+                 latex=(visit_traceable_matrix_crosstable_latex, None))
     app.add_node(traceable_checkmark,
                  html=passthrough,
                  latex=(visit_traceable_checkmark_latex, None))
     app.add_directive("traceable-list", TraceableListDirective)
     app.add_directive("traceable-matrix", TraceableMatrixDirective)
     app.add_latex_package("amssymb")  # Needed for "\checkmark" symbol.
+    app.add_latex_package("booktabs")  # Needed for "\cmidrule" command.
