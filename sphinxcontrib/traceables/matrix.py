@@ -156,7 +156,8 @@ class MatrixProcessor(ProcessorBase):
             for boolean in boolean_row:
                 entry = nodes.entry(); row += entry
                 if boolean:
-                    entry += traceable_checkmark()
+                    checkmark = traceable_checkmark(); entry += checkmark
+                    checkmark += nodes.inline(u"\u2714", u"\u2714")
                 else:
                     continue
 
@@ -216,7 +217,7 @@ class traceable_matrix(nodes.General, nodes.Element):
     pass
 
 
-class traceable_checkmark(nodes.inline):
+class traceable_checkmark(nodes.General, nodes.Element):
     pass
 
 
@@ -262,9 +263,13 @@ class TraceableMatrixDirective(Directive):
 #===========================================================================
 # Setup and register extension
 
-def visit_traceable_checkmark_html(self, node):
-    self.body.append(u"\u2714")
-    raise nodes.SkipNode
+def visit_passthrough(self, node):
+    pass
+
+def depart_passthrough(self, node):
+    pass
+
+passthrough = (visit_passthrough, depart_passthrough)
 
 def visit_traceable_checkmark_latex(self, node):
     self.body.append(r"\checkmark")
@@ -278,7 +283,7 @@ def setup(app):
     app.add_node(traceable_list)
     app.add_node(traceable_matrix)
     app.add_node(traceable_checkmark,
-                 html=(visit_traceable_checkmark_html, None),
+                 html=passthrough,
                  latex=(visit_traceable_checkmark_latex, None))
     app.add_directive("traceable-list", TraceableListDirective)
     app.add_directive("traceable-matrix", TraceableMatrixDirective)
