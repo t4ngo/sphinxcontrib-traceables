@@ -123,6 +123,7 @@ class MatrixProcessor(ProcessorBase):
             boolean_matrix.append((traceable, boolean_row))
 
         table = nodes.table()
+        table["classes"] += ["traceables-crosstable"]
         tgroup = nodes.tgroup(cols=len(secondaries), colwidths="auto")
         table += tgroup
 
@@ -137,7 +138,9 @@ class MatrixProcessor(ProcessorBase):
         entry = nodes.entry(); row += entry
         for secondary in secondaries:
             entry = nodes.entry(); row += entry
-            paragraph = nodes.paragraph(); entry += paragraph
+            container = nodes.container(); entry += container
+            inline = nodes.inline(); container += inline
+            paragraph = nodes.paragraph(); inline += paragraph
             paragraph += secondary.make_reference_node(
                 self.app.builder, docname)
 
@@ -154,7 +157,8 @@ class MatrixProcessor(ProcessorBase):
                 entry = nodes.entry(); row += entry
                 if not boolean:
                     continue
-                yes_symbol = u"\u2714"
+#                yes_symbol = u"\u2714"
+                yes_symbol = u"x"
                 paragraph = nodes.paragraph(yes_symbol, yes_symbol)
                 entry += paragraph
 

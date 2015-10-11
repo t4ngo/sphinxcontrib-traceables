@@ -1,0 +1,11 @@
+table.traceables-crosstable {
+    border: none;
+}
+
+table.traceables-crosstable thead th:first-child {
+    border: none;
+}
+
+table.traceables-crosstable tbody td {
+    text-align: center;
+}
