@@ -13,5 +13,4 @@ def test_list(app, status, warning):
 
     # Verify that ...
     tree = ElementTree.parse(app.outdir / "matrix_basic.xml")
-    pretty_print_xml(tree.getroot())
-    assert len(tree.findall(".//list_item")) == 2
+    assert len(tree.findall(".//list_item")) == 11
