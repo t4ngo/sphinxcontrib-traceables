@@ -1,0 +1,22 @@
+******************************************************************************
+Traceable in Perseus constellation
+******************************************************************************
+
+Auriga traceable
+==============================================================================
+
+.. traceable:: AURIGA
+   :title: Auriga
+   :constellation: Perseus
+   :color: green
+   :version: 1.0
+
+Cepheus traceable
+==============================================================================
+
+.. traceable:: CEPHEUS
+   :title: Cepheus
+   :constellation: Perseus
+   :child: AURIGA
+   :color: red
+   :version: 0.9

@@ -1,0 +1,32 @@
+******************************************************************************
+Traceable in Hercules constellation
+******************************************************************************
+
+Sagitta traceable
+==============================================================================
+
+.. traceable:: SAGITTA
+   :title: Sagitta
+   :constellation: Hercules
+   :color: blue
+   :version: 1.0
+
+Aquila traceable
+==============================================================================
+
+.. traceable:: AQUILA
+   :title: Aquila
+   :constellation: Hercules
+   :parent: SAGITTA
+   :color: red
+   :version: 0.8
+
+Lyra traceable
+==============================================================================
+
+.. traceable:: LYRA
+   :title: Lyra
+   :constellation: Hercules
+   :parent: SAGITTA
+   :color: blue
+   :version: 0.9
