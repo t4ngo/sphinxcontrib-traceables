@@ -21,7 +21,6 @@ def setup(app):
     # Register business logic of extension parts. This is done explicitly
     # here to ensure correct ordering during processing.
     traceables.infrastructure.ProcessorManager.register_processor_classes([
-        traceables.traceables.TraceablesProcessor,
         traceables.traceables.RelationshipsProcessor,
         traceables.traceables.AttributeListsProcessor,
         traceables.traceables.XrefProcessor,

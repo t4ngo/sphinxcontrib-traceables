@@ -47,9 +47,9 @@ class TraceablesStorage(object):
 
     def purge(self, docname):
         # Iterate over a copy of the list and remove from the original.
-        for node in set(self.traceables_set):
-            if node["docname"] == docname:
-                self.traceables_set.remove(node)
+        for traceable in set(self.traceables_set):
+            if traceable.target_node["docname"] == docname:
+                self.traceables_set.remove(traceable)
 
     def add_traceable(self, node):
         self.traceables_set.add(node)

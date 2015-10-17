@@ -16,7 +16,7 @@ from sphinx.environment import NoUri
 from sphinx.util.compat import make_admonition
 from sphinx.util.nodes import make_refnode
 
-from .infrastructure import ProcessorBase, Traceable
+from .infrastructure import ProcessorBase, Traceable, TraceablesStorage
 
 
 #===========================================================================
@@ -127,19 +127,14 @@ class TraceableDirective(Directive):
                                                           attributes,
                                                           target_node)
 
+        traceable = Traceable(target_node)
+        TraceablesStorage(env).add_traceable(traceable)
+
         return [target_node, index_node, presentation_node]
 
 
 #===========================================================================
 # Processors
-
-class TraceablesProcessor(ProcessorBase):
-
-    def process_doctree(self, doctree, docname):
-        for node in doctree.traverse(traceable_attribute_list):
-            traceable = Traceable(node["traceable-target"])
-            self.storage.add_traceable(traceable)
-
 
 class RelationshipsProcessor(ProcessorBase):
 
