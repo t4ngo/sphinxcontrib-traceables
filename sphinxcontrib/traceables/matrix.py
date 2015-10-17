@@ -46,28 +46,32 @@ class MatrixProcessor(ProcessorBase):
         ProcessorBase.__init__(self, app)
 
     def process_doctree(self, doctree, docname):
-        traceables = sorted(self.storage.traceables_set,
-                            key=lambda t: t.tag)
-#        filter = TraceablesFilter(traceables)
         for matrix_node in doctree.traverse(traceable_matrix):
             relationship = matrix_node["traceables-relationship"]
-            opposite = self.storage.get_relationship_opposite(relationship)
-            matrix = self.get_related_traceables(traceables, relationship)
+            matrix = self.build_traceable_matrix(relationship)
 
+            option_keys = [("traceables-max-primaries", "max-primaries"),
+                           ("traceables-max-secondaries", "max-secondaries")]
+            options = dict((key, matrix_node.get(attribute))
+                           for (attribute, key) in option_keys)
             format_name = matrix_node.get("traceables-format")
             formatter = self.get_formatter_method(format_name)
-            new_node = formatter(matrix, relationship, opposite, docname)
+            new_node = formatter(matrix, options, docname)
             matrix_node.replace_self(new_node)
 
-    def get_related_traceables(self, traceables, relationship):
-        matrix = []
-        for traceable in sorted(traceables):
-            relatives = traceable.relationships.get(relationship)
-            if relatives:
-                matrix.append((traceable, tuple(sorted(relatives))))
+    def build_traceable_matrix(self, forward):
+        backward = self.storage.get_relationship_opposite(forward)
+        matrix = TraceableMatrix(forward, backward)
+        traceables = self.storage.traceables_set
+        for traceable in traceables:
+            relatives = traceable.relationships.get(forward)
+            if not relatives:
+                continue
+            for relative in relatives:
+                matrix.add_traceable_pair(traceable, relative)
         return matrix
 
-    def create_list_table(self, matrix, relationship, opposite, docname):
+    def create_list_table(self, matrix, options, docname):
         table = nodes.table()
         tgroup = nodes.tgroup(cols=2, colwidths="auto"); table += tgroup
 
@@ -79,15 +83,19 @@ class MatrixProcessor(ProcessorBase):
         thead = nodes.thead(); tgroup += thead
         row = nodes.row(); thead += row
         entry = nodes.entry(); row += entry
-        entry += nodes.paragraph(opposite.capitalize(),
-                                 opposite.capitalize())
+        backward_relationship = matrix.backward_relationship.capitalize()
+        entry += nodes.paragraph(backward_relationship,
+                                 backward_relationship)
         entry = nodes.entry(); row += entry
-        entry += nodes.paragraph(relationship.capitalize(),
-                                 relationship.capitalize())
+        forward_relationship = matrix.forward_relationship.capitalize()
+        entry += nodes.paragraph(forward_relationship,
+                                 forward_relationship)
 
         # Add table body.
         tbody = nodes.tbody(); tgroup += tbody
-        for (traceable, relatives) in matrix:
+        for traceable in matrix.primaries:
+            relatives = matrix.get_relatives(traceable)
+
             # Create first row with a first column.
             row = nodes.row()
             entry = nodes.entry(morerows=len(relatives) - 1)
@@ -111,34 +119,35 @@ class MatrixProcessor(ProcessorBase):
 
         return table
 
-    def create_cross_table(self, matrix, relationship, opposite, docname):
-        primaries = []
-        secondaries = set()
-        for (traceable, relatives) in matrix:
-            primaries.append(traceable)
-            secondaries.update(relatives)
-        secondaries = sorted(secondaries)
-        boolean_matrix = []
-        for (traceable, relatives) in matrix:
-            boolean_row = [secondary in relatives
-                           for secondary in secondaries]
-            boolean_matrix.append((traceable, boolean_row))
+    def create_splittable_cross_table(self, matrix, options, docname):
+        max_primaries = options.get("max-primaries")
+        max_secondaries = options.get("max-secondaries")
+        subtables = []
+        for submatrix in matrix.split(max_secondaries, max_primaries):
+            subtable = self.create_cross_table(submatrix, options, docname)
+            paragraph = nodes.paragraph()
+            paragraph += subtable
+            subtables.append(paragraph)
+        container = nodes.container()
+        container.extend(subtables)
+        return container
 
+    def create_cross_table(self, matrix, options, docname):
         table = nodes.table()
-        table["classes"] += ["traceables-crosstable"]
-        tgroup = nodes.tgroup(cols=len(secondaries), colwidths="auto")
+        table["classes"].append("traceables-crosstable")
+        tgroup = nodes.tgroup(cols=len(matrix.secondaries), colwidths="auto")
         table += tgroup
 
         # Add column specifications.
         tgroup += nodes.colspec(colwidth=1)
-        for column in secondaries:
+        for column in matrix.secondaries:
             tgroup += nodes.colspec(colwidth=1)
 
         # Add heading row.
         thead = nodes.thead(); tgroup += thead
         row = nodes.row(); thead += row
         entry = nodes.entry(); row += entry
-        for secondary in secondaries:
+        for secondary in matrix.secondaries:
             entry = nodes.entry(); row += entry
             container = nodes.container(); entry += container
             inline = nodes.inline(); container += inline
@@ -148,16 +157,16 @@ class MatrixProcessor(ProcessorBase):
 
         # Add table body.
         tbody = nodes.tbody(); tgroup += tbody
-        for (traceable, boolean_row) in boolean_matrix:
+        for primary in matrix.primaries:
             row = nodes.row(); tbody += row
             entry = nodes.entry(); row += entry
             paragraph = nodes.paragraph(); entry += paragraph
-            paragraph += traceable.make_reference_node(
+            paragraph += primary.make_reference_node(
                 self.app.builder, docname)
 
-            for boolean in boolean_row:
+            for is_related in matrix.get_boolean_row(primary):
                 entry = nodes.entry(); row += entry
-                if boolean:
+                if is_related:
                     checkmark = traceable_checkmark(); entry += checkmark
                     checkmark += nodes.inline(u"\u2714", u"\u2714")
                 else:
@@ -165,15 +174,17 @@ class MatrixProcessor(ProcessorBase):
 
         container = traceable_matrix_crosstable()
         container += table
-        container["relationships"] = (relationship.capitalize(),
-                                      opposite.capitalize())
-        container["boolean_matrix"] = boolean_matrix
-        container["secondaries"] = secondaries
+        container["matrix"] = matrix
+#        backward = matrix.backward_relationship.capitalize()
+#        forward = matrix.forward_relationship.capitalize()
+#        container["relationships"] = (forward, backward)
+#        container["boolean_matrix"] = 0#boolean_matrix
+#        container["secondaries"] = matrix.secondaries
         return container
 
-    def create_bullet_list(self, matrix, relationship, opposite, docname):
+    def create_bullet_list(self, matrix, options, docname):
         new_node = nodes.bullet_list()
-        for (traceable, relatives) in matrix:
+        for traceable in matrix.primaries:
             item_node = nodes.list_item()
             paragraph_node = nodes.paragraph()
             paragraph_node += traceable.make_reference_node(
@@ -181,7 +192,7 @@ class MatrixProcessor(ProcessorBase):
             item_node += paragraph_node
 
             sublist_node = nodes.bullet_list()
-            for relative in relatives:
+            for relative in matrix.get_relatives(traceable):
                 subitem_node = nodes.list_item()
                 subparagraph_node = nodes.paragraph()
                 subparagraph_node += relative.make_reference_node(
@@ -197,7 +208,7 @@ class MatrixProcessor(ProcessorBase):
     formats = {
                "list": create_bullet_list,
                "columns": create_list_table,
-               "table": create_cross_table,
+               "table": create_splittable_cross_table,
               }
 
     def get_formatter_method(self, name):
@@ -249,7 +260,7 @@ class TraceableListDirective(Directive):
         node = traceable_list()
         node.docname = env.docname
         node.lineno = self.lineno
-        node["traceables-filter"] = self.options.get("filter") or None
+        node["traceables-filter"] = self.options.get("filter")
         return [node]
 
 
@@ -260,6 +271,8 @@ class TraceableMatrixDirective(Directive):
     option_spec = {
         "relationship": directives.unchanged_required,
         "format": MatrixProcessor.directive_format_choice,
+        "max-columns": directives.nonnegative_int,
+        "max-rows": directives.nonnegative_int,
     }
 
     def run(self):
@@ -269,6 +282,8 @@ class TraceableMatrixDirective(Directive):
         node.lineno = self.lineno
         node["traceables-relationship"] = self.options["relationship"]
         node["traceables-format"] = self.options.get("format")
+        node["traceables-max-secondaries"] = self.options.get("max-columns")
+        node["traceables-max-primaries"] = self.options.get("max-rows")
         return [node]
 
 
@@ -284,43 +299,35 @@ def depart_passthrough(self, node):
 passthrough = (visit_passthrough, depart_passthrough)
 
 def visit_traceable_matrix_crosstable_latex(self, node):
-    relationship, opposite = node["relationships"]
-    boolean_matrix = node["boolean_matrix"]
-    secondaries = node["secondaries"]
-#    max_columns = node.get("max_columns")
-#    if max_columns:
-#        secondary_sets = [[]]
-#        for secondary in secondaries:
-#            if len(secondary_sets[-1]) >= max_columns:
-#                secondary_sets.append([])
-#            secondary_sets[-1].append(secondary)
-#    num_columns = min(len(secondaries), max_columns)
+    matrix = node["matrix"]
+    num_columns = len(matrix.secondaries)
+    forward_relationship = matrix.forward_relationship.capitalize()
+    backward_relationship = matrix.backward_relationship.capitalize()
 
     lines = []
-#    lines.append(r"\begin{table} \centering")
-    lines.append(r"\begin{longtable}{@{} cl*{%d}c @{}}" % len(secondaries))
+    lines.append(r"\begin{longtable}{@{} cl*{%d}c @{}}" % num_columns)
     lines.append(r" & & \multicolumn{%d}{c}{%s} \\[2ex]"
-                 % (len(secondaries), latex_escape(relationship)))
+                 % (num_columns, latex_escape(forward_relationship)))
     headers = [r"\rotatebox{90}{%s}"
-               % latex_escape(head.tag) for head in secondaries]
+               % latex_escape(head.tag) for head in matrix.secondaries]
     lines.append(r" & & " + r" & ".join(headers) + r"\\")
-    lines.append(r"\cmidrule{2-%d}" % (len(secondaries) + 2))
-    for index, (traceable, boolean_row) in enumerate(boolean_matrix):
+    lines.append(r"\cmidrule{2-%d}" % (num_columns + 2))
+    for index, primary in enumerate(matrix.primaries):
+        boolean_row = matrix.get_boolean_row(primary)
         if index > 0:
             # Add horizontal rule above all but the first row.
-            lines.append(r"\cmidrule[0.05pt]{2-%d}" % (len(secondaries) + 2))
+            lines.append(r"\cmidrule[0.05pt]{2-%d}" % (num_columns + 2))
         checkmarks = [r"\checkmark" if boolean else ""
                       for boolean in boolean_row]
         if index == 0:
-            # Add opposite relationship name only once.
+            # Add backward relationship name only once.
             lines.append(r"\rotatebox{90}{\llap{%s}}"
-                         % latex_escape(opposite))
-        lines.append(r" & %s & " % latex_escape(traceable.tag)
+                         % latex_escape(backward_relationship))
+        lines.append(r" & %s & " % latex_escape(primary.tag)
                      + r" & ".join(checkmarks)
                      + r"\\")
-    lines.append(r"\cmidrule{2-%d}" % (len(secondaries) + 2))
+        lines.append(r"\cmidrule{2-%d}" % (num_columns + 2))
     lines.append(r"\end{longtable}")
-#    lines.append(r"\end{table}")
 
     self.body.append("\n".join(lines))
     raise nodes.SkipNode
@@ -331,6 +338,109 @@ def visit_traceable_checkmark_latex(self, node):
 
 def latex_escape(text):
     return six.text_type(text).translate(tex_escape_map)
+
+
+#===========================================================================
+# Helper class for traceable relationships
+
+class TraceableMatrix(object):
+
+    def __init__(self, forward_relationship, backward_relationship):
+        self._forward_relationship = forward_relationship
+        self._backward_relationship = backward_relationship
+        self._primaries = set()
+        self._secondaries = set()
+        self._relationships = {}
+
+    def ascii_table(self):
+        column_widths = [max(len(t.tag) for t in self.primaries)]
+        column_widths.extend(len(t.tag) for t in self.secondaries)
+        parts = [" " * column_widths[0]]
+        parts.extend(t.tag for t in self.secondaries)
+        lines = ["| " + " | ".join(parts) + " |"]
+        for primary in self.primaries:
+            parts = ["{0:{1}}".format(primary.tag, column_widths[0])]
+            for (is_related, width) in zip(self.get_boolean_row(primary),
+                                           column_widths[1:]):
+                symbol = "x" if is_related else " "
+                parts.append("{0:^{1}}".format(symbol, width))
+            lines.append("| " + " | ".join(parts) + " |")
+        return "\n".join(lines)
+
+    def add_primary(self, primary):
+        self._primaries.add(primary)
+
+    def add_secondary(self, secondary):
+        self._secondaries.add(secondary)
+
+    def add_traceable_pair(self, primary, secondary):
+        self._primaries.add(primary)
+        self._secondaries.add(secondary)
+        self._relationships.setdefault(primary, set()).add(secondary)
+
+    @property
+    def forward_relationship(self):
+        return self._forward_relationship
+
+    @property
+    def backward_relationship(self):
+        return self._backward_relationship
+
+    @property
+    def primaries(self):
+        return sorted(self._primaries)
+
+    @property
+    def secondaries(self):
+        return sorted(self._secondaries)
+
+    def get_relatives(self, primary):
+        return sorted(self._relationships.get(primary, ()))
+
+    def get_boolean_row(self, primary):
+        boolean_row = []
+        relatives = self.get_relatives(primary)
+        for secondary in self.secondaries:
+            boolean_row.append(secondary in relatives)
+        return boolean_row
+
+    def split(self, max_secondaries, max_primaries=None):
+        secondary_ranges = self.calculate_ranges(len(self._secondaries),
+                                                 max_secondaries)
+        primary_ranges = self.calculate_ranges(len(self._primaries),
+                                                max_primaries)
+        matrices = []
+        for (primary_start, primary_end) in primary_ranges:
+            range_primaries = self.primaries[primary_start:primary_end]
+            for (secondary_start, secondary_end) in secondary_ranges:
+                range_secondaries = self.secondaries[secondary_start:
+                                                     secondary_end]
+                submatrix = TraceableMatrix(self.forward_relationship,
+                                            self.backward_relationship)
+                for primary in range_primaries:
+                    submatrix.add_primary(primary)
+                for secondary in range_secondaries:
+                    submatrix.add_secondary(secondary)
+                for primary in range_primaries:
+                    for secondary in self.get_relatives(primary):
+                        if secondary in range_secondaries:
+                            submatrix.add_traceable_pair(primary, secondary)
+                matrices.append(submatrix)
+        return matrices
+
+    def calculate_ranges(self, total_length, max_range_length):
+        ranges = []
+        if max_range_length and max_range_length > 0:
+            range_index = 0
+            while range_index * max_range_length < total_length:
+                range_start = range_index * max_range_length
+                range_end = min((range_index + 1) * max_range_length,
+                                total_length)
+                ranges.append((range_start, range_end))
+                range_index += 1
+        else:
+            ranges.append((0, total_length))
+        return ranges
 
 
 #===========================================================================
