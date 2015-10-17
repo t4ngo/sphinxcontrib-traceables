@@ -11,7 +11,6 @@ from utils import with_app, pretty_print_xml
 def test_basics(app, status, warning):
     app.build()
     tree = ElementTree.parse(app.outdir / "index.xml")
-    pretty_print_xml(tree.getroot())
 
     # Verify that 2 traceables are found.
     assert len(tree.findall(".//target")) == 2
