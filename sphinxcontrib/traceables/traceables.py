@@ -1,6 +1,6 @@
 """
 The ``traceables`` module: Core traceables functionality
-============================================================================
+===============================================================================
 
 """
 
@@ -19,7 +19,7 @@ from sphinx.util.nodes import make_refnode
 from .infrastructure import ProcessorBase, Traceable, TraceablesStorage
 
 
-#===========================================================================
+# =============================================================================
 # Node types
 
 class traceable_attribute_list(nodes.General, nodes.Element):
@@ -30,7 +30,7 @@ class traceable_xref(nodes.Inline, nodes.Element):
     pass
 
 
-#===========================================================================
+# =============================================================================
 # Utility classes
 
 class DefaultDict(dict):
@@ -51,7 +51,7 @@ class DefaultDict(dict):
     __nonzero__ = __bool__
 
 
-#===========================================================================
+# =============================================================================
 # Directives
 
 class TraceableDirective(Directive):
@@ -133,7 +133,7 @@ class TraceableDirective(Directive):
         return [target_node, index_node, presentation_node]
 
 
-#===========================================================================
+# =============================================================================
 # Processors
 
 class RelationshipsProcessor(ProcessorBase):
@@ -188,7 +188,8 @@ class AttributeListsProcessor(ProcessorBase):
 
     def process_doctree(self, doctree, docname):
         for placeholder_node in doctree.traverse(traceable_attribute_list):
-            new_node = self.create_attribute_list_node(docname, placeholder_node)
+            new_node = self.create_attribute_list_node(docname,
+                                                       placeholder_node)
             placeholder_node.replace_self(new_node)
 
     def create_attribute_list_node(self, docname, placeholder_node):
@@ -214,7 +215,7 @@ class AttributeListsProcessor(ProcessorBase):
                 if len(content):
                     content += nodes.inline(text=", ")
                 content += relative.make_reference_node(self.app.builder,
-                                                         docname)
+                                                        docname)
             field_node += nodes.field_body("", content)
             field_list_node += field_node
 
@@ -236,14 +237,14 @@ class XrefProcessor(ProcessorBase):
             tag = xref_node["reftarget"]
             traceable = self.storage.get_or_create_traceable_by_tag(tag)
             if traceable.is_unresolved:
-                self.env.warn_node("Traceables: no traceable with tag '{0}' found!"
-                                   .format(tag), xref_node)
+                self.env.warn_node("Traceables: no traceable with tag '{0}'"
+                                   " found!".format(tag), xref_node)
             new_node = traceable.make_reference_node(self.app.builder,
                                                      docname)
             xref_node.replace_self(new_node)
 
 
-#===========================================================================
+# =============================================================================
 # Define defaults for config values
 
 default_relationships = [
@@ -255,7 +256,7 @@ default_relationships = [
 ]
 
 
-#===========================================================================
+# =============================================================================
 # Setup this extension part
 
 def setup(app):

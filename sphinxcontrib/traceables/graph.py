@@ -1,6 +1,6 @@
 """
 The ``graph`` module: Visualization of traceables
-============================================================================
+===============================================================================
 
 """
 
@@ -13,14 +13,14 @@ from graphviz import Digraph
 from .infrastructure import ProcessorBase
 
 
-#===========================================================================
+# =============================================================================
 # Node types
 
 class traceable_graph(nodes.General, nodes.Element):
     pass
 
 
-#===========================================================================
+# =============================================================================
 # Directives
 
 class TraceableGraphDirective(Directive):
@@ -42,7 +42,7 @@ class TraceableGraphDirective(Directive):
         return [node]
 
 
-#===========================================================================
+# =============================================================================
 # Processor
 
 class GraphProcessor(ProcessorBase):
@@ -59,8 +59,8 @@ class GraphProcessor(ProcessorBase):
             try:
                 traceable = self.storage.get_traceable_by_tag(tag)
             except KeyError:
-                self.env.warn_node("Traceables: no traceable with tag '{0}' found!"
-                                   .format(tag), graph_node)
+                self.env.warn_node("Traceables: no traceable with tag '{0}'"
+                                   " found!".format(tag), graph_node)
                 return
 
             # Construct relationship specification.
@@ -125,7 +125,7 @@ class GraphProcessor(ProcessorBase):
         dot.node(tag, title, **style)
 
 
-#===========================================================================
+# =============================================================================
 # Define defaults for config values
 
 default_graph_styles = {
@@ -143,8 +143,8 @@ default_graph_styles = {
 }
 
 
-#===========================================================================
-# Setup and register extension
+# =============================================================================
+# Setup extension
 
 def setup(app):
     app.add_config_value("traceables_graph_styles",

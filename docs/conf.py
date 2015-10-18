@@ -34,5 +34,4 @@ keep_warnings = True                   # Keep warnings in output documents.
 # Configure HTML output
 
 html_theme = 'sphinx_rtd_theme'
-#html_static_path = ['_static']
 html_show_sourcelink = True            # Link to source from pages.

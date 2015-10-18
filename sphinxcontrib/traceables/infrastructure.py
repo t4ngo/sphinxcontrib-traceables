@@ -1,6 +1,6 @@
 """
 The ``infrastructure`` module: Infrastructure for processing traceables
-============================================================================
+===============================================================================
 
 """
 
@@ -20,7 +20,7 @@ from sphinx.util.osutil import copyfile
 from .filter import ExpressionMatcher
 
 
-#===========================================================================
+# =============================================================================
 # Information storage classes
 
 class TraceablesStorage(object):
@@ -84,7 +84,7 @@ class TraceablesStorage(object):
         return self.relationship_directions[name]
 
 
-#===========================================================================
+# =============================================================================
 # Processor
 
 class Traceable(object):
@@ -125,7 +125,7 @@ class Traceable(object):
 
     @property
     def is_unresolved(self):
-        return self.target_node == None
+        return self.target_node is None
 
     def make_reference_node(self, builder, docname):
         text_node = nodes.literal(text=self.tag)
@@ -182,7 +182,7 @@ class ProcessorBase(object):
         pass
 
 
-#===========================================================================
+# =============================================================================
 # Filtering class
 
 class TraceablesFilter(object):
@@ -205,7 +205,7 @@ class TraceablesFilter(object):
         return matcher.matches(identifier_values)
 
 
-#===========================================================================
+# =============================================================================
 # Signal handling functions
 
 def add_static_files(app):
@@ -216,6 +216,7 @@ def add_static_files(app):
     for stylesheet_path in glob.glob(stylesheet_glob):
         basename = os.path.basename(stylesheet_path)
         app.add_stylesheet(basename)
+
 
 def copy_static_files(app, exception):
     if app.builder.name != "html" or exception:
@@ -230,17 +231,19 @@ def copy_static_files(app, exception):
                                         filename)
         copyfile(source_path, destination_path)
 
+
 def process_doctree(app, doctree, docname):
     processor_manager = ProcessorManager(app)
     processor_manager.process_doctree(doctree, docname)
+
 
 def purge_docname(app, env, docname):
     storage = TraceablesStorage(env)
     storage.purge(docname)
 
 
-#===========================================================================
-# Setup and register extension
+# =============================================================================
+# Setup extension
 
 def setup(app):
     app.connect("builder-inited", add_static_files)

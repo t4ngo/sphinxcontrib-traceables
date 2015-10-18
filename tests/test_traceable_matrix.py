@@ -7,7 +7,7 @@ from sphinxcontrib.traceables.infrastructure import (Traceable,
 from sphinxcontrib.traceables.matrix import TraceableMatrix
 
 
-#=============================================================================
+# =============================================================================
 # Tests
 
 @with_app(buildername="xml", srcdir="traceable_matrix", warningiserror=True)
@@ -25,10 +25,10 @@ def test_traceable_matrix(app, status, warning):
             matrix.add_traceable_pair(traceable, relative)
 
     # Verify correct primaries and secondaries.
-    assert ([t.tag for t in matrix.primaries]
-            == [u"CEPHEUS", u"SAGITTA"])
-    assert ([t.tag for t in matrix.secondaries]
-            == [u"AQUILA", u"AURIGA", u"LYRA"])
+    assert ([t.tag for t in matrix.primaries] ==
+            [u"CEPHEUS", u"SAGITTA"])
+    assert ([t.tag for t in matrix.secondaries] ==
+            [u"AQUILA", u"AURIGA", u"LYRA"])
 
     # Verify correct splitting of traceable matrix.
     submatrices = matrix.split(2)
@@ -47,6 +47,7 @@ def test_traceable_matrix(app, status, warning):
     eq_(len(submatrices), 2)
     verify_submatrices(matrix, submatrices)
 
+
 def verify_submatrices(matrix, submatrices):
     for submatrix in submatrices:
         for primary in submatrix.primaries:
@@ -55,11 +56,13 @@ def verify_submatrices(matrix, submatrices):
                                                submatrix.secondaries):
                 eq_(is_related, secondary in matrix.get_relatives(primary))
 
+
 def test_traceable_matrix_calculate_ranges():
     matrix = TraceableMatrix("forward", "backward")
     eq_(matrix.calculate_ranges(5, None), [(0, 5)])
     eq_(matrix.calculate_ranges(5, 0), [(0, 5)])
-    eq_(matrix.calculate_ranges(5, 1), [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
+    eq_(matrix.calculate_ranges(5, 1), [(0, 1), (1, 2), (2, 3), (3, 4),
+                                        (4, 5)])
     eq_(matrix.calculate_ranges(5, 2), [(0, 2), (2, 4), (4, 5)])
     eq_(matrix.calculate_ranges(5, 3), [(0, 3), (3, 5)])
     eq_(matrix.calculate_ranges(5, 4), [(0, 4), (4, 5)])

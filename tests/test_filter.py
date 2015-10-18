@@ -9,7 +9,7 @@ from sphinxcontrib.traceables.filter import (FilterVisitor, FilterError,
 from sphinxcontrib.traceables.infrastructure import Traceable, TraceablesFilter
 
 
-#=============================================================================
+# =============================================================================
 # Tests for filter expression handling
 
 def test_filter_syntax():
@@ -17,6 +17,7 @@ def test_filter_syntax():
         "color": "red",
         "version": 1.2,
     }
+
     def match(expression_input):
         matcher = ExpressionMatcher(expression_input)
         return matcher.matches(identifier_values)
@@ -34,46 +35,47 @@ def test_filter_operators():
         "color": "red",
         "version": 1.2,
     }
+
     def match(expression_input):
         matcher = ExpressionMatcher(expression_input)
         return matcher.matches(identifier_values)
 
     # Operator "=="
-    assert True  == match("color == 'red'")
-    assert False == match("color == 'blue'")
-    assert True  == match("'red' == color")
-    assert False == match("'blue' == color")
-    assert True  == match("'red' == 'red'")
-    assert False == match("'blue' == 'red'")
-    assert False == match("'blue' == 4.2")
+    assert match("color == 'red'") is True
+    assert match("color == 'blue'") is False
+    assert match("'red' == color") is True
+    assert match("'blue' == color") is False
+    assert match("'red' == 'red'") is True
+    assert match("'blue' == 'red'") is False
+    assert match("'blue' == 4.2") is False
 
     # Operator "!="
-    assert False == match("color != 'red'")
-    assert True  == match("color != 'blue'")
+    assert match("color != 'red'") is False
+    assert match("color != 'blue'") is True
 
     # Operator ">"
-    assert False == match("version > 2")
-    assert True  == match("version > 1.1")
+    assert match("version > 2") is False
+    assert match("version > 1.1") is True
 
     # Operator ">="
-    assert False == match("version >= 2")
-    assert True  == match("version >= 1.2")
+    assert match("version >= 2") is False
+    assert match("version >= 1.2") is True
 
     # Operator "<"
-    assert True  == match("version < 2")
-    assert False == match("version < 1.1")
+    assert match("version < 2") is True
+    assert match("version < 1.1") is False
 
     # Operator "<="
-    assert True  == match("version <= 1.2")
-    assert False == match("version <= 1.1")
+    assert match("version <= 1.2") is True
+    assert match("version <= 1.1") is False
 
     # Operator "in"
-    assert False == match("version in []")
-    assert True  == match("version in [1.1, 1.2, -4]")
+    assert match("version in []") is False
+    assert match("version in [1.1, 1.2, -4]") is True
 
     # Operator "not in"
-    assert True  == match("version not in []")
-    assert False == match("version not in [1.1, 1.2, -4]")
+    assert match("version not in []") is True
+    assert match("version not in [1.1, 1.2, -4]") is False
 
     # Valid but unsupported operator
     assert_raises(FilterError, match, "version is 1.2")
@@ -83,7 +85,7 @@ def test_filter_operators():
     assert_raises(FilterError, match, "version INVALID 1.2")
 
 
-#=============================================================================
+# =============================================================================
 # Tests for filtering of traceables
 
 class FilterTester(object):

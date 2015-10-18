@@ -1,6 +1,6 @@
 """
 The ``filter`` module: Filter expression processing
-============================================================================
+===============================================================================
 
 """
 
@@ -8,7 +8,7 @@ import os
 import ast
 
 
-#=============================================================================
+# =============================================================================
 # Custom error class
 
 class FilterError(ValueError):
@@ -18,7 +18,7 @@ class FilterError(ValueError):
         self.node = node
 
 
-#=============================================================================
+# =============================================================================
 # Filter class
 
 class ExpressionMatcher(object):
@@ -35,7 +35,7 @@ class ExpressionMatcher(object):
         return visitor.visit(self.expression_tree)
 
 
-#=============================================================================
+# =============================================================================
 # AST visitor class for filter expressions
 
 class FilterVisitor(ast.NodeVisitor):
@@ -47,7 +47,8 @@ class FilterVisitor(ast.NodeVisitor):
         if len(node.body) == 0:
             raise FilterError(node, "Filter invalid because it is empty")
         elif len(node.body) != 1:
-            raise FilterError(node, "Filter invalid because has multiple expressions")
+            raise FilterError(node, "Filter invalid because has multiple"
+                                    " expressions")
         return self.visit(node.body[0])
 
     def visit_Expr(self, node):
@@ -81,14 +82,22 @@ class FilterVisitor(ast.NodeVisitor):
 
         # Operators described here:
         # https://greentreesnakes.readthedocs.org/en/latest/nodes.html#Compare
-        if   isinstance(operator, ast.Eq):     return left == right
-        elif isinstance(operator, ast.NotEq):  return left != right
-        elif isinstance(operator, ast.Lt):     return left < right
-        elif isinstance(operator, ast.LtE):    return left <= right
-        elif isinstance(operator, ast.Gt):     return left > right
-        elif isinstance(operator, ast.GtE):    return left >= right
-        elif isinstance(operator, ast.In):     return left in right
-        elif isinstance(operator, ast.NotIn):  return left not in right
+        if isinstance(operator, ast.Eq):
+            return left == right
+        elif isinstance(operator, ast.NotEq):
+            return left != right
+        elif isinstance(operator, ast.Lt):
+            return left < right
+        elif isinstance(operator, ast.LtE):
+            return left <= right
+        elif isinstance(operator, ast.Gt):
+            return left > right
+        elif isinstance(operator, ast.GtE):
+            return left >= right
+        elif isinstance(operator, ast.In):
+            return left in right
+        elif isinstance(operator, ast.NotIn):
+            return left not in right
         else:
             # Unsupported operators: ast.Is, ast.IsNot
             raise FilterError(node, "Invalid operator of type {0}"

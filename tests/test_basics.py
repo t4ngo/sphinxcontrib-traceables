@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from utils import with_app, pretty_print_xml
 
 
-#=============================================================================
+# =============================================================================
 # Tests
 
 @with_app(buildername="xml", srcdir="basics")

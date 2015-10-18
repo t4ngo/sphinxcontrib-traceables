@@ -1,6 +1,6 @@
 """
 The ``matrix`` module: Matrices and lists of traceables
-============================================================================
+===============================================================================
 
 """
 
@@ -13,7 +13,7 @@ from sphinx.util.texescape import tex_escape_map
 from .infrastructure import ProcessorBase, TraceablesFilter
 
 
-#===========================================================================
+# =============================================================================
 # Processors
 
 class ListProcessor(ProcessorBase):
@@ -73,26 +73,32 @@ class MatrixProcessor(ProcessorBase):
 
     def create_list_table(self, matrix, options, docname):
         table = nodes.table()
-        tgroup = nodes.tgroup(cols=2, colwidths="auto"); table += tgroup
+        tgroup = nodes.tgroup(cols=2, colwidths="auto")
+        table += tgroup
 
         # Add column specifications.
         tgroup += nodes.colspec(colwidth=50)
         tgroup += nodes.colspec(colwidth=50)
 
         # Add heading row.
-        thead = nodes.thead(); tgroup += thead
-        row = nodes.row(); thead += row
-        entry = nodes.entry(); row += entry
+        thead = nodes.thead()
+        tgroup += thead
+        row = nodes.row()
+        thead += row
+        entry = nodes.entry()
+        row += entry
         backward_relationship = matrix.backward_relationship.capitalize()
         entry += nodes.paragraph(backward_relationship,
                                  backward_relationship)
-        entry = nodes.entry(); row += entry
+        entry = nodes.entry()
+        row += entry
         forward_relationship = matrix.forward_relationship.capitalize()
         entry += nodes.paragraph(forward_relationship,
                                  forward_relationship)
 
         # Add table body.
-        tbody = nodes.tbody(); tgroup += tbody
+        tbody = nodes.tbody()
+        tgroup += tbody
         for traceable in matrix.primaries:
             relatives = matrix.get_relatives(traceable)
 
@@ -100,7 +106,8 @@ class MatrixProcessor(ProcessorBase):
             row = nodes.row()
             entry = nodes.entry(morerows=len(relatives) - 1)
             row += entry
-            paragraph = nodes.paragraph(); entry += paragraph
+            paragraph = nodes.paragraph()
+            entry += paragraph
             paragraph += traceable.make_reference_node(
                 self.app.builder, docname)
 
@@ -110,8 +117,10 @@ class MatrixProcessor(ProcessorBase):
                     row = nodes.row()
                 tbody += row
 
-                entry = nodes.entry(); row += entry
-                paragraph = nodes.paragraph(); entry += paragraph
+                entry = nodes.entry()
+                row += entry
+                paragraph = nodes.paragraph()
+                entry += paragraph
                 paragraph += relative.make_reference_node(
                     self.app.builder, docname)
 
@@ -144,30 +153,43 @@ class MatrixProcessor(ProcessorBase):
             tgroup += nodes.colspec(colwidth=1)
 
         # Add heading row.
-        thead = nodes.thead(); tgroup += thead
-        row = nodes.row(); thead += row
-        entry = nodes.entry(); row += entry
+        thead = nodes.thead()
+        tgroup += thead
+        row = nodes.row()
+        thead += row
+        entry = nodes.entry()
+        row += entry
         for secondary in matrix.secondaries:
-            entry = nodes.entry(); row += entry
-            container = nodes.container(); entry += container
-            inline = nodes.inline(); container += inline
-            paragraph = nodes.paragraph(); inline += paragraph
+            entry = nodes.entry()
+            row += entry
+            container = nodes.container()
+            entry += container
+            inline = nodes.inline()
+            container += inline
+            paragraph = nodes.paragraph()
+            inline += paragraph
             paragraph += secondary.make_reference_node(
                 self.app.builder, docname)
 
         # Add table body.
-        tbody = nodes.tbody(); tgroup += tbody
+        tbody = nodes.tbody()
+        tgroup += tbody
         for primary in matrix.primaries:
-            row = nodes.row(); tbody += row
-            entry = nodes.entry(); row += entry
-            paragraph = nodes.paragraph(); entry += paragraph
+            row = nodes.row()
+            tbody += row
+            entry = nodes.entry()
+            row += entry
+            paragraph = nodes.paragraph()
+            entry += paragraph
             paragraph += primary.make_reference_node(
                 self.app.builder, docname)
 
             for is_related in matrix.get_boolean_row(primary):
-                entry = nodes.entry(); row += entry
+                entry = nodes.entry()
+                row += entry
                 if is_related:
-                    checkmark = traceable_checkmark(); entry += checkmark
+                    checkmark = traceable_checkmark()
+                    entry += checkmark
                     checkmark += nodes.inline(u"\u2714", u"\u2714")
                 else:
                     continue
@@ -225,7 +247,7 @@ class MatrixProcessor(ProcessorBase):
         return directives.choice(argument, format_names)
 
 
-#===========================================================================
+# =============================================================================
 # Node types
 
 class traceable_list(nodes.General, nodes.Element):
@@ -244,7 +266,7 @@ class traceable_checkmark(nodes.General, nodes.Element):
     pass
 
 
-#===========================================================================
+# =============================================================================
 # Directives
 
 class TraceableListDirective(Directive):
@@ -287,16 +309,19 @@ class TraceableMatrixDirective(Directive):
         return [node]
 
 
-#===========================================================================
+# =============================================================================
 # Node visitor functions
 
 def visit_passthrough(self, node):
     pass
 
+
 def depart_passthrough(self, node):
     pass
 
+
 passthrough = (visit_passthrough, depart_passthrough)
+
 
 def visit_traceable_matrix_crosstable_latex(self, node):
     matrix = node["matrix"]
@@ -323,24 +348,25 @@ def visit_traceable_matrix_crosstable_latex(self, node):
             # Add backward relationship name only once.
             lines.append(r"\rotatebox{90}{\llap{%s}}"
                          % latex_escape(backward_relationship))
-        lines.append(r" & %s & " % latex_escape(primary.tag)
-                     + r" & ".join(checkmarks)
-                     + r"\\")
+        lines.append(" & %s & " % latex_escape(primary.tag) +
+                     " & ".join(checkmarks) + r"\\")
         lines.append(r"\cmidrule{2-%d}" % (num_columns + 2))
     lines.append(r"\end{longtable}")
 
     self.body.append("\n".join(lines))
     raise nodes.SkipNode
 
+
 def visit_traceable_checkmark_latex(self, node):
     self.body.append(r"\checkmark")
     raise nodes.SkipNode
+
 
 def latex_escape(text):
     return six.text_type(text).translate(tex_escape_map)
 
 
-#===========================================================================
+# =============================================================================
 # Helper class for traceable relationships
 
 class TraceableMatrix(object):
@@ -408,7 +434,7 @@ class TraceableMatrix(object):
         secondary_ranges = self.calculate_ranges(len(self._secondaries),
                                                  max_secondaries)
         primary_ranges = self.calculate_ranges(len(self._primaries),
-                                                max_primaries)
+                                               max_primaries)
         matrices = []
         for (primary_start, primary_end) in primary_ranges:
             range_primaries = self.primaries[primary_start:primary_end]
@@ -443,8 +469,8 @@ class TraceableMatrix(object):
         return ranges
 
 
-#===========================================================================
-# Setup and register extension
+# =============================================================================
+# Setup extension
 
 def setup(app):
     app.add_node(traceable_list)
