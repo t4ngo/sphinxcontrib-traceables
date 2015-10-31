@@ -11,3 +11,4 @@ Contents
    graph
    hercules
    perseus
+   lacaille

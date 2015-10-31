@@ -16,3 +16,17 @@ The directive shown above gives the following output:
 
 .. traceable-graph::
    :tags: SAGITTA, PEGASUS
+
+Traceable graph
+==============================================================================
+
+The source listing below displays a ``traceable-graph`` directive::
+
+    .. traceable-graph::
+       :tags: NORMA
+
+The directive shown above gives the following output:
+
+.. traceable-graph::
+   :tags: NORMA
+   :relationships: output, used-in:2

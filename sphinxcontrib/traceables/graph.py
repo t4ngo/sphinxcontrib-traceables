@@ -67,11 +67,11 @@ class GraphProcessor(ProcessorBase):
 
             # Determine relationships to include in graph.
             input = graph_node.get("traceable-relationships")
-            relationships = self.parse_relationships(input)
+            relationship_length_pairs = self.parse_relationships(input)
 
             # Construct input for graph.
             graph_input = self.construct_graph_input(start_traceables,
-                                                     relationships)
+                                                     relationship_length_pairs)
 
             # Generate diagram input and create output node.
             graphviz_node = graphviz.graphviz()
@@ -119,14 +119,13 @@ class GraphProcessor(ProcessorBase):
             all_relationship_dirs = self.storage.relationship_directions
             for (relationship, dir) in all_relationship_dirs.items():
                 relationships.append((relationship, dir, None))
-        return relationships
+        return [(relationship, max_length)
+                for (relationship, dir, max_length) in relationships]
 
-    def construct_graph_input(self, traceables, relationships):
-        graph_input = GraphInput(self.storage)
+    def construct_graph_input(self, traceables, relationship_length_pairs):
+        graph_input = GraphInput(self.storage, relationship_length_pairs)
         for traceable in traceables:
-            for (relationship, direction, max_length) in relationships:
-                graph_input.add_traceable_walk(traceable, relationship,
-                                               direction, max_length)
+            graph_input.add_traceable_walk(traceable)
         return graph_input
 
     def generate_dot(self, graph_input):
@@ -143,7 +142,9 @@ class GraphProcessor(ProcessorBase):
             traceable1, traceable2, relationship, direction = relationship_info
             src = traceable1.tag if direction >= 0 else traceable2.tag
             dst = traceable2.tag if direction >= 0 else traceable1.tag
-            dot.edge(src, dst)
+            reverse = self.storage.get_relationship_opposite(relationship)
+            dot.edge(src, dst, headlabel=reverse, taillabel=relationship,
+                     labelfontsize="7.0", labelfontcolor="#999999")
 
         return dot.source
 
@@ -175,45 +176,26 @@ class GraphProcessor(ProcessorBase):
 
 class GraphInput(object):
 
-    def __init__(self, storage):
+    def __init__(self, storage, relationship_length_pairs):
         self.storage = storage
+        self.relationship_length_pairs = relationship_length_pairs
         self._traceables = set()
         self._relationships = set()
 
-    def add_traceable_walk(self, traceable, relationship, direction,
-                           max_length=None):
+    def add_traceable_walk(self, traceable):
         print
-        print "Starting walk:", traceable, relationship, direction
-        path = [[traceable]]
-        while path:
-            print "Loop:", path
-            if path[-1]:
-                current = path[-1][-1]
-                self._traceables.add(current)
-                if relationship:
-                    relatives = current.relationships.get(relationship)
-                else:
-                    relatives = set()
-                    for group in current.relationships.values():
-                        relatives.update(group)
-                if relatives and (not max_length or len(path) <= max_length):
-                    path.append(list(relatives))
-                    for relative in relatives:
-                        self._relationships.add((current, relative,
-                                                 relationship, direction))
-                else:
-                    path[-1].pop()
-            else:
-                path.pop()
-                if path:
-                    path[-1].pop()
+        print "Starting walk:", traceable, self.relationship_length_pairs
+
+        self._walk_traceable(traceable, 0)
+
         print "Resulting traceables:"
         for traceable in sorted(self._traceables):
             print " -", traceable
         print "Resulting relationships:"
         for relationship in sorted(self._relationships):
             print " -", ", ".join(str(part) for part in relationship)
-        removed_pairs = []
+
+        # Make all relationships forward in direction.
         for relationship_info in self._relationships.copy():
             traceable1, traceable2, relationship, direction = relationship_info
             if direction == -1:
@@ -221,6 +203,20 @@ class GraphInput(object):
                 reversed_info = (traceable2, traceable1, opposite, 1)
                 self._relationships.remove(relationship_info)
                 self._relationships.add(reversed_info)
+
+    def _walk_traceable(self, traceable, length):
+        self._traceables.add(traceable)
+        for relationship, max_length in self.relationship_length_pairs:
+            if max_length and length >= max_length:
+                continue
+            direction = self.storage.get_relationship_direction(relationship)
+            relatives = traceable.relationships.get(relationship, ())
+            for relative in relatives:
+                relationship_info = (traceable, relative, relationship,
+                                     direction)
+                if relationship_info not in self._relationships:
+                    self._relationships.add(relationship_info)
+                    self._walk_traceable(relative, length + 1)
 
     @property
     def traceables(self):
