@@ -1,14 +1,14 @@
 Basic matrix
 ==============================================================================
 
-Relationship "parent"
+Relationship "parents"
 ------------------------------------------------------------------------------
 
 .. traceable-matrix::
-   :relationship: parent
+   :relationship: parents
 
-Relationship "child"
+Relationship "children"
 ------------------------------------------------------------------------------
 
 .. traceable-matrix::
-   :relationship: child
+   :relationship: children

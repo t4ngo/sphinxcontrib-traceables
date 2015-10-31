@@ -4,10 +4,10 @@
   :random-attribute: Some random value
 
 .. traceable:: AQUILA
-  :parent: SAGITTA
+  :parents: SAGITTA
 
   Content of AQUILA.
   This traceable is related to :traceable:`SAGITTA`.
 
 .. traceable-graph::
-  :start: SAGITTA
+  :tags: SAGITTA

@@ -10,9 +10,9 @@ Traceable graph
 The source listing below displays a ``traceable-graph`` directive::
 
     .. traceable-graph::
-       :start: SAGITTA
+       :tags: SAGITTA, PEGASUS
 
 The directive shown above gives the following output:
 
 .. traceable-graph::
-   :start: SAGITTA
+   :tags: SAGITTA, PEGASUS

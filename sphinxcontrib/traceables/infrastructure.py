@@ -13,6 +13,7 @@ from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.roles import XRefRole
 from sphinx.environment import NoUri
+from sphinx.errors import ExtensionError
 from sphinx.util.compat import make_admonition
 from sphinx.util.nodes import make_refnode
 from sphinx.util.osutil import copyfile
@@ -76,6 +77,9 @@ class TraceablesStorage(object):
             traceable = Traceable(None, tag)
             self.add_traceable(traceable)
         return traceable
+
+    def is_valid_relationship(self, name):
+        return name in self.relationship_opposites
 
     def get_relationship_opposite(self, name):
         try:
@@ -179,13 +183,29 @@ class ProcessorManager(object):
 
 class ProcessorBase(object):
 
-    def __init__(self, app):
+    Error = ExtensionError
+
+    def __init__(self, app, process_node_type=None):
         self.app = app
         self.env = self.app.builder.env
         self.config = self.app.builder.config
         self.storage = TraceablesStorage(self.env)
+        self.process_node_type = process_node_type
 
     def process_doctree(self, doctree, docname):
+        for node in doctree.traverse(self.process_node_type):
+            try:
+                self.process_node(node, doctree, docname)
+            except self.Error, error:
+                message = str(error)
+                self.env.warn_node(message, node)
+                msg = nodes.system_message(message=message,
+                                           level=2, type="ERROR",
+                                           source=node.source,
+                                           line=node.line)
+                node.replace_self(msg)
+
+    def process_node(self, node, doctree, docname):
         pass
 
 

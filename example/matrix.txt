@@ -14,13 +14,13 @@ The source listing below displays a ``traceable-matrix`` directive with
 ``list`` format::
 
     .. traceable-matrix::
-       :relationship: parent
+       :relationship: parents
        :format: list
 
 The directive shown above gives the following output:
 
 .. traceable-matrix::
-   :relationship: parent
+   :relationship: parents
    :format: list
 
 Columns format
@@ -30,13 +30,13 @@ The source listing below displays a ``traceable-matrix`` directive with
 ``columns`` format::
 
     .. traceable-matrix::
-       :relationship: child
+       :relationship: children
        :format: columns
 
 The directive shown above gives the following output:
 
 .. traceable-matrix::
-   :relationship: child
+   :relationship: children
    :format: columns
 
 Table format
@@ -46,13 +46,13 @@ The source listing below displays a ``traceable-matrix`` directive with
 ``table`` format::
 
     .. traceable-matrix::
-       :relationship: child
+       :relationship: children
        :format: table
 
 The directive shown above gives the following output:
 
 .. traceable-matrix::
-   :relationship: child
+   :relationship: children
    :format: table
 
 Table format with max-columns
@@ -62,13 +62,13 @@ The source listing below displays a ``traceable-matrix`` directive with
 ``table`` format with ``max-columns`` specified::
 
     .. traceable-matrix::
-       :relationship: child
+       :relationship: children
        :format: table
        :max-columns: 2
 
 The directive shown above gives the following output:
 
 .. traceable-matrix::
-   :relationship: child
+   :relationship: children
    :format: table
    :max-columns: 2

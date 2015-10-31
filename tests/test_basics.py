@@ -18,21 +18,21 @@ def test_basics(app, status, warning):
     assert len(tree.findall(".//admonition")) == 2
     assert len(tree.findall(".//admonition")) == 2
 
-    # Verify that child-parent relationship are made.
+    # Verify that children-parents relationship are made.
     assert len(tree.findall(".//field_list")) == 2
-    parent_fields, child_fields = tree.findall(".//field_list")
-    for field in parent_fields:
+    parents_fields, children_fields = tree.findall(".//field_list")
+    for field in parents_fields:
         field_name = field.findall("./field_name")[0]
-        if field_name.text == "child":
+        if field_name.text == "children":
             break
     else:
-        assert False, "Parent's child field not found!"
-    for field in child_fields:
+        assert False, "Parent's children field not found!"
+    for field in children_fields:
         field_name = field.findall("./field_name")[0]
-        if field_name.text == "parent":
+        if field_name.text == "parents":
             break
     else:
-        assert False, "Child's parent field not found!"
+        assert False, "Child's parents field not found!"
 
     # Verify that a warning is emitted for unknown traceable tag.
     assert (warning.getvalue().find(

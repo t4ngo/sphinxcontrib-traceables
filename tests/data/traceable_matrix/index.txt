@@ -8,14 +8,14 @@
 .. traceable:: AQUILA
    :title: Aquila
    :constellation: Hercules
-   :parent: SAGITTA
+   :parents: SAGITTA
    :color: red
    :version: 0.8
 
 .. traceable:: LYRA
    :title: Lyra
    :constellation: Hercules
-   :parent: SAGITTA
+   :parents: SAGITTA
    :color: blue
    :version: 0.9
 
@@ -28,6 +28,6 @@
 .. traceable:: CEPHEUS
    :title: Cepheus
    :constellation: Perseus
-   :child: AURIGA
+   :children: AURIGA
    :color: red
    :version: 0.9

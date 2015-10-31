@@ -43,21 +43,23 @@ class ListProcessor(ProcessorBase):
 class MatrixProcessor(ProcessorBase):
 
     def __init__(self, app):
-        ProcessorBase.__init__(self, app)
+        ProcessorBase.__init__(self, app, traceable_matrix)
 
-    def process_doctree(self, doctree, docname):
-        for matrix_node in doctree.traverse(traceable_matrix):
-            relationship = matrix_node["traceables-relationship"]
-            matrix = self.build_traceable_matrix(relationship)
+    def process_node(self, matrix_node, doctree, docname):
+        relationship = matrix_node["traceables-relationship"]
+        if not self.storage.is_valid_relationship(relationship):
+            raise self.Error("Invalid relationship: {0}"
+                             .format(relationship))
+        matrix = self.build_traceable_matrix(relationship)
 
-            option_keys = [("traceables-max-primaries", "max-primaries"),
-                           ("traceables-max-secondaries", "max-secondaries")]
-            options = dict((key, matrix_node.get(attribute))
-                           for (attribute, key) in option_keys)
-            format_name = matrix_node.get("traceables-format")
-            formatter = self.get_formatter_method(format_name)
-            new_node = formatter(matrix, options, docname)
-            matrix_node.replace_self(new_node)
+        option_keys = [("traceables-max-primaries", "max-primaries"),
+                       ("traceables-max-secondaries", "max-secondaries")]
+        options = dict((key, matrix_node.get(attribute))
+                       for (attribute, key) in option_keys)
+        format_name = matrix_node.get("traceables-format")
+        formatter = self.get_formatter_method(format_name)
+        new_node = formatter(matrix, options, docname)
+        matrix_node.replace_self(new_node)
 
     def build_traceable_matrix(self, forward):
         backward = self.storage.get_relationship_opposite(forward)
@@ -301,7 +303,8 @@ class TraceableMatrixDirective(Directive):
         env = self.state.document.settings.env
         node = traceable_matrix()
         node.docname = env.docname
-        node.lineno = self.lineno
+#        node.source = env.docname
+        node.line = self.lineno
         node["traceables-relationship"] = self.options["relationship"]
         node["traceables-format"] = self.options.get("format")
         node["traceables-max-secondaries"] = self.options.get("max-columns")

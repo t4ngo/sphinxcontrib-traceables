@@ -10,7 +10,7 @@ from docutils.parsers.rst import Directive, directives
 from sphinx.ext import graphviz
 from graphviz import Digraph
 
-from .infrastructure import ProcessorBase
+from .infrastructure import ProcessorBase, Traceable
 
 
 # =============================================================================
@@ -29,7 +29,8 @@ class TraceableGraphDirective(Directive):
     optional_arguments = 0
     final_argument_whitespace = False
     option_spec = {
-        "start": directives.unchanged_required,
+        "tags": directives.unchanged_required,
+        "relationships": directives.unchanged_required,
     }
     has_content = True
 
@@ -38,7 +39,8 @@ class TraceableGraphDirective(Directive):
         node = traceable_graph()
         node.docname = env.docname
         node.lineno = self.lineno
-        node["traceable-start"] = self.options["start"]
+        node["traceable-tags"] = self.options["tags"]
+        node["traceable-relationships"] = self.options.get("relationships")
         return [node]
 
 
@@ -54,30 +56,26 @@ class GraphProcessor(ProcessorBase):
 
     def process_doctree(self, doctree, docname):
         for graph_node in doctree.traverse(traceable_graph):
-            # Find start traceable.
-            tag = graph_node["traceable-start"]
-            try:
-                traceable = self.storage.get_traceable_by_tag(tag)
-            except KeyError:
-                self.env.warn_node("Traceables: no traceable with tag '{0}'"
-                                   " found!".format(tag), graph_node)
-                return
+            # Determine graph's starting traceables.
+            start_tags = graph_node["traceable-tags"]
+            start_traceables = self.get_start_traceables(start_tags,
+                                                         graph_node)
+            if not start_traceables:
+                self.env.warn_node("Traceables: no valid tags for graph,"
+                                   " so skipping graph", node)
+                continue
 
-            # Construct relationship specification.
-            traceables = set()
-            traceables.add(traceable)
-            relationships = []
-            for name, relateds in traceable.relationships.items():
-                dir = self.storage.get_relationship_direction(name)
-                for related in relateds:
-                    traceables.add(related)
-                    relationships.append((traceable, related, dir))
-            sorted_traceables = sorted(traceables, key=lambda t: t.tag)
+            # Determine relationships to include in graph.
+            input = graph_node.get("traceable-relationships")
+            relationships = self.parse_relationships(input)
+
+            # Construct input for graph.
+            graph_input = self.construct_graph_input(start_traceables,
+                                                     relationships)
 
             # Generate diagram input and create output node.
             graphviz_node = graphviz.graphviz()
-            graphviz_node["code"] = self.generate_dot(sorted_traceables,
-                                                      relationships)
+            graphviz_node["code"] = self.generate_dot(graph_input)
             graphviz_node["options"] = []
             graphviz_node["inline"] = False
 #            caption = "Relationship diagram for {0}".format(traceable.tag)
@@ -85,7 +83,53 @@ class GraphProcessor(ProcessorBase):
 #                                                  caption)
             graph_node.replace_self(graphviz_node)
 
-    def generate_dot(self, traceables, relationships):
+    def get_start_traceables(self, tags_string, node):
+        tags = Traceable.split_tags_string(tags_string)
+        traceables = []
+        for tag in tags:
+            try:
+                traceable = self.storage.get_traceable_by_tag(tag)
+                traceables.append(traceable)
+            except KeyError:
+                self.env.warn_node("Traceables: no traceable with tag '{0}'"
+                                   " found!".format(tag), node)
+        return traceables
+
+    def parse_relationships(self, input):
+        relationships = []
+        if input:
+            for part in input.split(","):
+                pair = part.split(":", 1)
+                if len(pair) == 2:
+                    relationship = pair[0].strip()
+                    try:
+                        max_length = int(pair[1].strip())
+                    except:
+                        raise ValueError("Invalid maximum length: '{0}'"
+                                         .format(part))
+                else:
+                    relationship = part.strip()
+                    max_length = None
+                if not self.storage.is_valid_relationship(relationship):
+                    raise self.Error("Invalid relationship: {0}"
+                                     .format(relationship))
+                dir = self.storage.get_relationship_direction(relationship)
+                relationships.append((relationship, dir, max_length))
+        else:
+            all_relationship_dirs = self.storage.relationship_directions
+            for (relationship, dir) in all_relationship_dirs.items():
+                relationships.append((relationship, dir, None))
+        return relationships
+
+    def construct_graph_input(self, traceables, relationships):
+        graph_input = GraphInput(self.storage)
+        for traceable in traceables:
+            for (relationship, direction, max_length) in relationships:
+                graph_input.add_traceable_walk(traceable, relationship,
+                                               direction, max_length)
+        return graph_input
+
+    def generate_dot(self, graph_input):
         dot = Digraph("Traceable relationships",
                       comment="Traceable relationships")
         dot.body.append("rankdir=LR")
@@ -93,9 +137,10 @@ class GraphProcessor(ProcessorBase):
         dot.attr("node", fontname="helvetica", fontsize="7.5")
         dot.attr("edge", fontname="helvetica", fontsize="7.5")
 
-        for traceable in traceables:
+        for traceable in graph_input.traceables:
             self.add_dot_traceable(dot, traceable)
-        for traceable1, traceable2, direction in relationships:
+        for relationship_info in graph_input.relationships:
+            traceable1, traceable2, relationship, direction = relationship_info
             src = traceable1.tag if direction >= 0 else traceable2.tag
             dst = traceable2.tag if direction >= 0 else traceable1.tag
             dot.edge(src, dst)
@@ -123,6 +168,67 @@ class GraphProcessor(ProcessorBase):
 
         # Add dot node.
         dot.node(tag, title, **style)
+
+
+# =============================================================================
+# Container class for storing graph input
+
+class GraphInput(object):
+
+    def __init__(self, storage):
+        self.storage = storage
+        self._traceables = set()
+        self._relationships = set()
+
+    def add_traceable_walk(self, traceable, relationship, direction,
+                           max_length=None):
+        print
+        print "Starting walk:", traceable, relationship, direction
+        path = [[traceable]]
+        while path:
+            print "Loop:", path
+            if path[-1]:
+                current = path[-1][-1]
+                self._traceables.add(current)
+                if relationship:
+                    relatives = current.relationships.get(relationship)
+                else:
+                    relatives = set()
+                    for group in current.relationships.values():
+                        relatives.update(group)
+                if relatives and (not max_length or len(path) <= max_length):
+                    path.append(list(relatives))
+                    for relative in relatives:
+                        self._relationships.add((current, relative,
+                                                 relationship, direction))
+                else:
+                    path[-1].pop()
+            else:
+                path.pop()
+                if path:
+                    path[-1].pop()
+        print "Resulting traceables:"
+        for traceable in sorted(self._traceables):
+            print " -", traceable
+        print "Resulting relationships:"
+        for relationship in sorted(self._relationships):
+            print " -", ", ".join(str(part) for part in relationship)
+        removed_pairs = []
+        for relationship_info in self._relationships.copy():
+            traceable1, traceable2, relationship, direction = relationship_info
+            if direction == -1:
+                opposite = self.storage.get_relationship_opposite(relationship)
+                reversed_info = (traceable2, traceable1, opposite, 1)
+                self._relationships.remove(relationship_info)
+                self._relationships.add(reversed_info)
+
+    @property
+    def traceables(self):
+        return sorted(self._traceables)
+
+    @property
+    def relationships(self):
+        return sorted(self._relationships)
 
 
 # =============================================================================

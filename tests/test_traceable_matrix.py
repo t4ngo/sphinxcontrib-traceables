@@ -14,21 +14,21 @@ from sphinxcontrib.traceables.matrix import TraceableMatrix
 def test_traceable_matrix(app, status, warning):
     app.build()
     storage = TraceablesStorage(app.env)
+    tree = ElementTree.parse(app.outdir / "index.xml")
+    pretty_print_xml(tree.getroot())
 
     # Construct a traceable matrix.
-    forward = "child"
+    forward = "children"
     backward = storage.get_relationship_opposite(forward)
     matrix = TraceableMatrix(forward, backward)
     for traceable in storage.traceables_set:
-        relatives = traceable.relationships.get(forward)
-        for relative in relatives or ():
+        relatives = traceable.relationships.get(forward, ())
+        for relative in relatives:
             matrix.add_traceable_pair(traceable, relative)
 
     # Verify correct primaries and secondaries.
-    assert ([t.tag for t in matrix.primaries] ==
-            [u"CEPHEUS", u"SAGITTA"])
-    assert ([t.tag for t in matrix.secondaries] ==
-            [u"AQUILA", u"AURIGA", u"LYRA"])
+    eq_([t.tag for t in matrix.primaries], [u"CEPHEUS", u"SAGITTA"])
+    eq_([t.tag for t in matrix.secondaries], [u"AQUILA", u"AURIGA", u"LYRA"])
 
     # Verify correct splitting of traceable matrix.
     submatrices = matrix.split(2)
