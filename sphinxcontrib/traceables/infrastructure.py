@@ -78,10 +78,16 @@ class TraceablesStorage(object):
         return traceable
 
     def get_relationship_opposite(self, name):
-        return self.relationship_opposites[name]
+        try:
+            return self.relationship_opposites[name]
+        except KeyError:
+            raise ValueError("Unknown relationship name: '{0}'".format(name))
 
     def get_relationship_direction(self, name):
-        return self.relationship_directions[name]
+        try:
+            return self.relationship_directions[name]
+        except KeyError:
+            raise ValueError("Unknown relationship name: '{0}'".format(name))
 
 
 # =============================================================================
@@ -144,7 +150,8 @@ class Traceable(object):
         else:
             return text_node
 
-    def split_tags_string(self, tags_string):
+    @classmethod
+    def split_tags_string(cls, tags_string):
         if not tags_string:
             return []
         return filter(None, (tag.strip() for tag in tags_string.split(",")))
