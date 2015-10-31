@@ -248,7 +248,7 @@ class XrefProcessor(ProcessorBase):
 # Define defaults for config values
 
 default_relationships = [
-    ("parent",   "child",       True),
+    ("parents",  "children",    True),
     ("sibling",  "sibling",     False),
     ("output",   "created-in",  True),
     ("used-in",  "input",       True),
