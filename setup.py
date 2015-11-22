@@ -23,7 +23,7 @@ def get_version():
 setup(
       name="sphinxcontrib-traceables",
       version=get_version(),
-      description="Sphinx extension for traceability within "
+      description="Sphinx extension that adds traceability within "
                   "documentation",
       author="Christo Butcher",
       author_email="",
