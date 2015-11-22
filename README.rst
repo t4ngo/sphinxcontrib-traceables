@@ -1,4 +1,4 @@
-sphinxcontrib-traceable
+sphinxcontrib-traceables
 ==============================================================================
 
 |docs-status|
