@@ -2,6 +2,54 @@
 Logical architecture
 ******************************************************************************
 
+Behavioral architecture model
+==============================================================================
+
+When Sphinx is run, this extension performs the steps listed below.
+
+#. Initialization
+
+   - Sphinx calls :func:`~sphinxcontrib.traceables.setup()`, which
+     registers the extension's directives, roles, event handlers, etc.
+
+#. Parsing source files
+
+   - When Sphinx encounters a traceables directive or role while parsing
+     input, it calls the associated class.
+   - The directive or role class processes its input and creates one or
+     more nodes which are then inserted into the resulting doctree; these
+     will be processed later after all source files have been parsed.
+   - A directive that defines a new traceable item adds that item to the
+     traceables cache that this extension maintains, so that later
+     processing logic knows about all traceable items.
+
+#. Processing doctrees
+
+   - During initialization, this extension registered a handler for the
+     event-doctree-resolved_ event; that handler is called after all
+     source files have been parsed into doctrees.
+   - The event handler calls the
+     :class:`~sphinxcontrib.traceables.infrastructure.ProcessorManager`
+     to process the given doctree; it in turn calls classes derived from
+     :class:`~sphinxcontrib.traceables.infrastructure.ProcessorBase`
+     to perform the various traceables functionalities.
+
+#. Maintaining state information
+
+   - During initialization, this extension registered a handler for the
+     event-env-purge-doc_ event; that handler is called to clean up
+     any state this extension may keep related to a given source file.
+   - The event handler calls the
+     :class:`~sphinxcontrib.traceables.infrastructure.TraceablesStorage`
+     to remove all information stored in its cache related to the given
+     source file.
+
+.. _event-doctree-resolved:
+   http://sphinx-doc.org/extdev/appapi.html#event-doctree-resolved
+
+.. _event-env-purge-doc:
+   http://sphinx-doc.org/extdev/appapi.html#event-env-purge-doc
+
 During parsing of source files
 ==============================================================================
 
@@ -10,20 +58,6 @@ Sphinx during parsing of source.
 
 Traceable directive
 ------------------------------------------------------------------------------
-
-A traceable directive is used to create a new traceable item and define
-its attributes. It must be given a unique tag so that it can be referenced
-from elsewhere in the documentation. It may also be given attributes and
-content text.
-
-Example of a traceable directive:
-
-.. code-block:: rest
-
-  .. traceable:: TAG
-    :title: Lorem ipsum
-
-    Lorem ipsum dolor sit...
 
 When Sphinx encounters a traceable directive during parsing, a 
 :class:`~sphinxcontrib.traceables.traceables.TraceableDirective` is called to 
@@ -40,12 +74,6 @@ node for later processing.
 
 Traceable role
 ------------------------------------------------------------------------------
-
-Example of a traceable role:
-
-.. code-block:: rest
-
-  Lorem ipsum :traceable:`TAG` dolor sit...
 
 When Sphinx encounters a traceable role during parsing, a
 :class:`~sphinxcontrib.traceables.traceables.traceable_xref`
