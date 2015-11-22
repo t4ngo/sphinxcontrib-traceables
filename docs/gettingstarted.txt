@@ -20,7 +20,7 @@ project's Sphinx configuration file ``conf.py``:
    extensions = ['sphinxcontrib-traceable']
 
 Minimal example
-------------------------------------------------------------------------------
+==============================================================================
 
 In your project's documentation, you can define a new traceable as shown
 below. Note that the tag ``LOREM-IPSUM`` given to the traceable should be
@@ -42,3 +42,10 @@ The traceable defined above can be referenced in line as follows:
 
 See :ref:`usage` for more information about this and more functionality
 provided by this extension.
+
+See the ``example`` directory (available `on GitHub <github-example_>`_)
+within this extension's source code for a complete Sphinx project
+demonstrating various features provided by this extension.
+
+.. _github-example:
+   https://github.com/t4ngo/sphinxcontrib-traceables/tree/master/example
