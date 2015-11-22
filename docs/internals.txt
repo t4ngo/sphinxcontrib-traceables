@@ -5,7 +5,7 @@ Extension internals
 .. toctree::
    :maxdepth: 2
 
-   dynamicmodel
+   logicarch
    internals/infrastructure
    internals/traceables
    internals/matrix

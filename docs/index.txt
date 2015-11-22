@@ -1,7 +1,7 @@
 .. _contents:
 
 ******************************************************************************
-Sphinxcontrib-traceables documentation
+Sphinxcontrib-traceables
 ******************************************************************************
 
 :Release: |release|
