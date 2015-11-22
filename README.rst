@@ -1,7 +1,7 @@
 sphinxcontrib-traceable
 ==============================================================================
 
-.. comment: Line reserved for badges
+|docs-status|
 
 A Sphinx extension offering traceability within documentation.
 
@@ -16,3 +16,8 @@ as relationship graphs.
    - Development: ...
 
 .. _Sphinx: http://sphinx-doc.org/
+
+.. |docs-status| image:: https://readthedocs.org/projects/sphinxcontrib-traceables/badge/?version=latest
+    :alt: Documentation status
+    :scale: 100%
+    :target: https://sphinxcontrib-traceables.readthedocs.org/en/latest/?badge=latest
