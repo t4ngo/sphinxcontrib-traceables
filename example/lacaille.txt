@@ -1,0 +1,56 @@
+******************************************************************************
+Traceables in the La Caille constellation
+******************************************************************************
+
+Norma traceable
+==============================================================================
+
+.. traceable:: NORMA
+   :title: Norma
+   :constellation: La Caille
+   :output: CIRCINUS
+   :color: blue
+   :version: 1.0
+
+Circinus traceable
+==============================================================================
+
+.. traceable:: CIRCINUS
+   :title: Circinus
+   :constellation: La Caille
+   :color: red
+   :version: 0.8
+
+Fornax traceable
+==============================================================================
+
+.. traceable:: FORNAX
+   :title: Fornax
+   :constellation: La Caille
+   :input: CIRCINUS
+   :output: CAELUM
+   :color: blue
+   :version: 0.9
+
+Caelum traceable
+==============================================================================
+
+.. traceable:: CAELUM
+   :title: Caelum
+   :constellation: La Caille
+
+Octans traceable
+==============================================================================
+
+.. traceable:: OCTANS
+   :title: Octans
+   :constellation: La Caille
+   :input: CAELUM
+   :output: MENSA
+
+Mensa traceable
+==============================================================================
+
+.. traceable:: MENSA
+   :title: Mensa
+   :constellation: La Caille

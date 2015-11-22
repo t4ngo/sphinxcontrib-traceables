@@ -1,0 +1,12 @@
+
+.. traceable:: SAGITTA
+  :title: Sagitta
+  :random-attribute: Some random value
+
+.. traceable:: AQUILA
+  :parents: SAGITTA
+
+  Content of AQUILA.
+  This traceable is related to :traceable:`SAGITTA`.
+
+The traceable :traceable:`NONEXISTENT` doesn't exist.

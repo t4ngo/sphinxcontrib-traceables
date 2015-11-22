@@ -1,0 +1,38 @@
+******************************************************************************
+Traceables in the Perseus constellation
+******************************************************************************
+
+Auriga traceable
+==============================================================================
+
+.. traceable:: AURIGA
+   :title: Auriga
+   :constellation: Perseus
+   :color: green
+   :version: 1.0
+
+Cepheus traceable
+==============================================================================
+
+.. traceable:: CEPHEUS
+   :title: Cepheus
+   :constellation: Perseus
+   :children: AURIGA
+   :color: red
+   :version: 0.9
+
+Pegasus traceable
+==============================================================================
+
+.. traceable:: PEGASUS
+   :title: Pegasus
+   :constellation: Perseus
+   :parents: AURIGA
+
+Lacerta traceable
+==============================================================================
+
+.. traceable:: LACERTA
+   :title: Lacerta
+   :constellation: Perseus
+   :parents: PEGASUS

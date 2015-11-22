@@ -1,0 +1,56 @@
+******************************************************************************
+Traceables in the Hercules constellation
+******************************************************************************
+
+Sagitta traceable
+==============================================================================
+
+.. traceable:: SAGITTA
+   :title: Sagitta
+   :constellation: Hercules
+   :color: blue
+   :version: 1.0
+
+Aquila traceable
+==============================================================================
+
+.. traceable:: AQUILA
+   :title: Aquila
+   :constellation: Hercules
+   :parents: SAGITTA
+   :color: red
+   :version: 0.8
+
+Lyra traceable
+==============================================================================
+
+.. traceable:: LYRA
+   :title: Lyra
+   :constellation: Hercules
+   :parents: SAGITTA
+   :color: blue
+   :version: 0.9
+
+Cygnus traceable
+==============================================================================
+
+.. traceable:: CYGNUS
+   :title: Cygnus
+   :constellation: Hercules
+   :parents: AQUILA
+
+Corvus traceable
+==============================================================================
+
+.. traceable:: CORVUS
+   :title: Corvus
+   :constellation: Hercules
+   :parents: AQUILA
+
+Vulpecula traceable
+==============================================================================
+
+.. traceable:: VULPECULA
+   :title: Vulpecula
+   :constellation: Hercules
+   :parents: CYGNUS

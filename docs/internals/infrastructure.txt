@@ -1,0 +1,3 @@
+.. automodule:: sphinxcontrib.traceables.infrastructure
+   :members:
+   :undoc-members:

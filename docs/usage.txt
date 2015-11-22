@@ -1,0 +1,68 @@
+.. _usage:
+
+******************************************************************************
+Usage
+******************************************************************************
+
+Defining traceables
+==============================================================================
+
+Traceables are defined using the ``traceable`` directive described below.
+
+.. rst:directive:: .. traceable:: TAG
+
+   Create a traceable item. The ``TAG`` should be a unique string throughout
+   the documentation, because it is used to reference the traceable.
+
+   The traceable can be given attributes, such as a title, a version, and
+   relationships with other traceables. Attributes are specified using the
+   form ``:<option-name>: <option-value>`` [#rest-directive-spec]_.
+   For example, the text below defines a traceable with tag ``LOREM-IPSUM``,
+   title "Lorem ipsum", and content "Lorem ipsum dolor sit...":
+
+   .. code-block:: rest
+
+      .. traceable:: LOREM-IPSUM
+         :title: Lorem ipsum
+
+         Lorem ipsum dolor sit...
+
+   Traceable directives have the following properties:
+
+   - A single argument defining the traceable's tag (``.. traceable:: <TAG>``)
+
+     - The tag must be unique throughout the documentation
+     - The tag may not contain spaces
+
+   - Zero or more options (``:<option-name>: <option-value>``)
+
+     - The special option ``title`` defines the traceable's title
+     - Options with a valid relationship name define relationships which
+       this traceable has with other traceable
+     - Arbitrary option names and values are allowed; if not special options
+       as listed above, the values are stored as traceable attributes and can
+       be used for filtering/querying traceables
+
+   - Optional content
+
+     - If content is given, it will be parsed as regular ReST.
+
+Referencing traceables
+==============================================================================
+
+Traceables can be referenced using the ``traceable`` role described below.
+
+.. rst:role:: traceable
+
+   Create a reference to a traceable defined elsewhere in the
+   documentation. For example:
+
+   .. code-block:: rest
+
+      Lorem ipsum :traceable:`LOREM-IPSUM` dolor sit...
+
+.. comment: ==================================================================
+
+.. [#rest-directive-spec] The formal specification of reStructuredText
+   directives is documented here:
+   http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#directives
