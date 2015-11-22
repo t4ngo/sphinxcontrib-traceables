@@ -7,11 +7,8 @@ from glob import glob
 # -------------------------------------------------------------------------
 # Configure extensions
 
-sys.path.append(os.path.abspath('extensions'))
-
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinxcontrib.traceables',
 ]
 
 # -------------------------------------------------------------------------
