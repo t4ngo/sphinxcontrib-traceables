@@ -15,7 +15,7 @@ def test_traceable_matrix(app, status, warning):
     app.build()
     storage = TraceablesStorage(app.env)
     tree = ElementTree.parse(app.outdir / "index.xml")
-    pretty_print_xml(tree.getroot())
+#    pretty_print_xml(tree.getroot())
 
     # Construct a traceable matrix.
     forward = "children"

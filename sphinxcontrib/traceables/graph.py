@@ -183,17 +183,7 @@ class GraphInput(object):
         self._relationships = set()
 
     def add_traceable_walk(self, traceable):
-        print
-        print "Starting walk:", traceable, self.relationship_length_pairs
-
         self._walk_traceable(traceable, 0)
-
-        print "Resulting traceables:"
-        for traceable in sorted(self._traceables):
-            print " -", traceable
-        print "Resulting relationships:"
-        for relationship in sorted(self._relationships):
-            print " -", ", ".join(str(part) for part in relationship)
 
         # Make all relationships forward in direction.
         for relationship_info in self._relationships.copy():
