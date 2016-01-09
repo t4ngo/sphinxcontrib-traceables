@@ -1,7 +1,7 @@
 sphinxcontrib-traceables
 ==============================================================================
 
-|docs-status|
+|docs-status| |build-status|
 
 A Sphinx extension offering traceability within documentation.
 
@@ -21,3 +21,7 @@ as relationship graphs.
     :alt: Documentation status
     :scale: 100%
     :target: https://sphinxcontrib-traceables.readthedocs.org/en/latest/?badge=latest
+
+.. |build-status| image:: https://travis-ci.org/t4ngo/sphinxcontrib-traceables.svg
+    :alt: Build status
+    :target: https://travis-ci.org/t4ngo/sphinxcontrib-traceables
