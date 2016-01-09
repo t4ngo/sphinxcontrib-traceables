@@ -30,6 +30,7 @@ setup(
       url="https://github.com/t4ngo/sphinxcontrib.traceables",
       long_description=read("README.rst"),
       packages=find_packages(),
+      include_package_data=True,
       platforms="any",
 
       classifiers=[
