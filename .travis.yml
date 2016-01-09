@@ -1,4 +1,10 @@
 language: python
 python:
   - "2.7"
-script: nosetests
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+script:
+  nosetests --with-coverage --cover-package=sphinxcontrib-traceables
+after_success:
+  coveralls
