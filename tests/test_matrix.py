@@ -32,8 +32,3 @@ def test_matrix_structure(app, status, warning):
     rows = tree.findall(".//tbody/row")
     assert len(rows) == 3
     assert len(rows[0].findall("./entry")) == 3
-
-@with_app(buildername="latex", srcdir="matrix", warningiserror=True)
-def test_latex_builder(app, status, warning):
-    '''Verify that Latex builder doesn't fail'''
-    app.build()
