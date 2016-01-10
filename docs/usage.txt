@@ -61,6 +61,69 @@ Traceables can be referenced using the ``traceable`` role described below.
 
       Lorem ipsum :traceable:`LOREM-IPSUM` dolor sit...
 
+Showing traceables matrices
+==============================================================================
+
+Relationships between traceables can be shown using the ``traceable-matrix``
+directive described below.
+
+.. rst:directive:: .. traceable-matrix::
+
+   Generate a traceables matrix. The matrix shows pairs of traceables which
+   are related to each other by a given relationship (see the
+   ``:relationship:`` option below). Various formats are available for showing
+   the pairs of traceables (see the ``:format:`` option below).
+
+   The following options are available for this directive:
+
+   ``:relationship:`` -- name of traceables relationship
+      Specify which relationship between traceables to show in the
+      generated matrix.
+
+   ``:format:`` -- name of format
+      Specify the matrix format to generate. The following
+      formats are available:
+
+      - ``:format: table``
+        Traditional traceability table format.
+        This format allows the following additional options to be set:
+
+        ``:max-columns:`` -- positive integer
+            The maximum number of columns to output.
+            If more columns would have been necessary, multiple tables will be
+            generated.
+
+        ``:max-rows:`` -- positive integer
+            The maximum number of rows to output.
+            If more rows would have been necessary, multiple tables will be
+            generated.
+
+      - ``:format: columns``
+        2-column table of related traceables
+
+      - ``:format: list``
+        2-level list of related traceables
+
+For example, the directive shown below would generate a table showing
+all traceables related to each other with the ``children`` relationship:
+
+.. code-block:: rest
+
+   .. traceable-matrix::
+      :relationship: children
+      :format: table
+
+The directive shown above creates a traceability matrix as shown below.
+The image below is a screenshot from the latex-PDF generated for the
+`example project <https://github.com/t4ngo/sphinxcontrib-traceables/tree/master/example>`_
+which is part of this extension's source code.
+
+.. image:: _static/example-matrix-table.*
+   :scale: 50%
+
+Showing traceables graphs
+==============================================================================
+
 .. comment: ==================================================================
 
 .. [#rest-directive-spec] The formal specification of reStructuredText
