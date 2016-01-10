@@ -1,7 +1,10 @@
 
 .. toctree::
 
-   matrix_basic
+   matrix_default
+   matrix_list
+   matrix_columns
+   matrix_table
 
 .. traceable:: SAGITTA
    :title: Sagitta

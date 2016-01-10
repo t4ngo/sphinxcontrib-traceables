@@ -1,0 +1,14 @@
+Default matrix
+==============================================================================
+
+Relationship "parents"
+------------------------------------------------------------------------------
+
+.. traceable-matrix::
+   :relationship: parents
+
+Relationship "children"
+------------------------------------------------------------------------------
+
+.. traceable-matrix::
+   :relationship: children

@@ -1,14 +1,9 @@
-Basic matrix
+List matrix
 ==============================================================================
 
-Relationship "parents"
+Default options
 ------------------------------------------------------------------------------
 
 .. traceable-matrix::
    :relationship: parents
-
-Relationship "children"
-------------------------------------------------------------------------------
-
-.. traceable-matrix::
-   :relationship: children
+   :format: list
