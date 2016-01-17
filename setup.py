@@ -1,8 +1,8 @@
 
 from setuptools import setup, find_packages
+from pip.req import parse_requirements
 import os
 
-import sphinxcontrib.traceables
 
 # --------------------------------------------------------------------------
 # Setup package.
@@ -20,6 +20,12 @@ def get_version():
     version_string = read("VERSION.txt").strip()
     return version_string
 
+
+def get_requirements():
+    requirements = parse_requirements("requirements.txt")
+    return [str(r.req) for r in requirements]
+
+
 setup(
       name="sphinxcontrib-traceables",
       version=get_version(),
@@ -31,6 +37,7 @@ setup(
       long_description=read("README.rst"),
       packages=find_packages(),
       include_package_data=True,
+      install_requires=get_requirements(),
       platforms="any",
 
       classifiers=[
