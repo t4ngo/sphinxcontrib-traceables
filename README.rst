@@ -1,7 +1,7 @@
 sphinxcontrib-traceables
 ==============================================================================
 
-|docs-status| |build-status| |coverage-status|
+|docs-status| |build-status| |coverage-status| |pypi-version| |pypi-license|
 
 A Sphinx extension offering traceability within documentation.
 
@@ -26,7 +26,14 @@ as relationship graphs.
     :alt: Build status
     :target: https://travis-ci.org/t4ngo/sphinxcontrib-traceables
 
-
 .. |coverage-status| image:: https://coveralls.io/repos/t4ngo/sphinxcontrib-traceables/badge.svg?branch=master&service=github
     :alt: Test coverage status
     :target: https://coveralls.io/github/t4ngo/sphinxcontrib-traceables?branch=master
+
+.. |pypi-version| image:: https://img.shields.io/pypi/v/sphinxcontrib-traceables.svg
+    :alt: Latest version at PyPI
+    :target: https://pypi.python.org/pypi/sphinxcontrib-traceables
+
+.. |pypi-license| image:: https://img.shields.io/pypi/l/sphinxcontrib-traceables.svg
+    :alt: License specified at PyPI
+    :target: https://pypi.python.org/pypi/sphinxcontrib-traceables
