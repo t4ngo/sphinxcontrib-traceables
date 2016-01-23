@@ -1,6 +1,7 @@
 
 from setuptools import setup, find_packages
 from pip.req import parse_requirements
+from pip.download import PipSession
 import os
 
 
@@ -22,7 +23,8 @@ def get_version():
 
 
 def get_requirements():
-    requirements = parse_requirements("requirements.txt")
+    requirements = parse_requirements("requirements.txt",
+                                      session=PipSession())
     return [str(r.req) for r in requirements]
 
 
