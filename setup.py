@@ -36,6 +36,7 @@ setup(
       author="Christo Butcher",
       author_email="",
       url="https://github.com/t4ngo/sphinxcontrib.traceables",
+      license="Apache 2.0",
       long_description=read("README.rst"),
       packages=find_packages(),
       include_package_data=True,
