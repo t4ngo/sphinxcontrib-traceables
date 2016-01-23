@@ -1,10 +1,17 @@
 language: python
 python:
-  - "2.7"
+  - '2.7'
 install:
   - pip install -r requirements.txt
   - pip install coveralls
-script:
-  nosetests --with-coverage --cover-package=sphinxcontrib.traceables
-after_success:
-  coveralls
+script: nosetests --with-coverage --cover-package=sphinxcontrib.traceables
+after_success: coveralls
+deploy:
+  provider: pypi
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true
+  user:
+    secure: DVlBBVz7BT3EgRVHwQwrfkcwuJo8JyZKF/d3o3+WAb4xcV8iB8yIQpuFyt/x5xwlkBTDdLFUyPxNb99ciJt9KSYcnr27cnppfWfGne/VGM211ZcPNh/biOklvE7yDwDA1ILZPFbjx6Mqi6dHI+dXQzsuPtj3SOPKlrrRVqKaqYW64Qzq7qEzSYiUhgieFP0b6NpCAmsDLSlp6QVaEktd3wXCELLAnTOpeXjpvTSPUzOWh9R4EXgI4aauwTdj9yJiU1NrDmrFg/kURAT0rUlqzQ3AnQTHLnzHbqUANahYHzDbkLqxmtH8/vSCz2zTVRAD6Ri1rTlld571NxMniNbyyrdIsQPtgYxTaFqc3zeUzX76qmEMIOj8z2EfteLzogMajtdTXSb3w/1y+JxXSoo1pNLNivyoaHG9FZ89pgG8B756zmPLjg0LysBMhpu1dGJtC2QRaI4HE5cFiBoL1ctTAaM5NWkpfeYaD2J5VLSU1ABCj5Ej1qD6AfnvY6Zqnfc6d6oYaSnCRLVX5+Z770nhQXlzGiiyjuCR3rLceaCtQJWuvgyTAc46yK4H5yA08WKfiPNRtXdlHYVEQRH64th1NZmr7yxbOa4TmSwBChrn3p9o2ZUbXPZ6MLZdU1FQ49V7cLA4KIwxoP+V7JYjqK3sFgDg9Tah+ih6ytdoQ59N4Ss=
+  password:
+    secure: h1OjdEm6a8jvf99Dh+Y5sLbs9Gz0GsVoYG46YN48aeb3mvcSthyZM6ireR1FUiFD4Y/WRrlzVMk2riEAXXhaz/2Nq7hr6Ym5p1FClPmoiWdLR6cvDWxFVqZgIcYi47ToCMFbBlXu/sAC3iBftzsQcPShMdG6MgwYGnMJSKBcrSue1e6wt8Uxl54EPRSEMPnXDq4p8mGSpDgqae7OKJV20QmyEjrrezvbLtwwfxiCl3rVyzehcBmdtSDGiId35WNeFmIwx0Lzc60Yy1Bhpnjw4+RS6fYQf0br+iWUD/RXgvdvmPbVWjZ6vojtfivEQlOfl9fxvCo+/qsBxdaEymroBG8RaAYzVMSfWiUwBxIwmB7jk2AWQdGdDDfkXNLsilEBgNJQLYIt+XWYxdPWoJY+VDc4/oiuMQoCN/FPxtBSmDWb4u28tcMjLB17AnK7KUnoQrFBdA9wnVKaZLh7/9/du+NL9xVmIknSmK9SzC78t+2Bu1eMVHR+qICLlECqge7xhd4X+4pv42hKKUAlsVPiHMatVc+F5eTKGJ8SmG+At7UnSaGGWi+j82QSOXD16hpub5cwVfHYRafyyhK1Q9prVgrYBtnIsn+WSVMTgJE4NuOY5uXflg2yNZhdPHWxI6JctK3tFTaG71fDZ1qJqt3oKh790CTsLqbI7+WTDNvt1Ks=
