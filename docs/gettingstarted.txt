@@ -11,13 +11,13 @@ Overview
 Installation
 ==============================================================================
 
-Install this package using ``pip install sphinxcontrib-traceable``, or
+Install this package using ``pip install sphinxcontrib-traceables``, or
 from source using ``python setup.py install``. Then add it to your
 project's Sphinx configuration file ``conf.py``:
 
 .. code-block:: python
 
-   extensions = ['sphinxcontrib-traceable']
+   extensions = ['sphinxcontrib-traceables']
 
 Minimal example
 ==============================================================================
