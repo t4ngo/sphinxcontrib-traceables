@@ -12,12 +12,21 @@ extensions = [
 ]
 
 # -------------------------------------------------------------------------
+# Helper function for retrieving info from files
+
+def read(*names):
+    root_dir = os.path.dirname(__file__)
+    path = os.path.join(root_dir, *names)
+    with open(path) as f:
+        return f.read()
+
+# -------------------------------------------------------------------------
 # General configuration
 
 project = u'sphinxcontrib.traceables'
 copyright = u'2015, Christo'
-version = '0.1'                        # The short X.Y version.
-release = '0.1'                        # The full version, incl alpha/beta/rc.
+release = read('..', 'VERSION.txt')    # The full version, incl alpha/beta/rc.
+version = '.'.join(release.split('.')[0:2]) # The short X.Y version.
 
 templates_path = ['_templates']
 source_suffix = '.txt'                 # The suffix of source filenames.
