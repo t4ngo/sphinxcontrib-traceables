@@ -53,6 +53,10 @@ class TraceablesStorage(object):
                 self.traceables_set.remove(traceable)
 
     def add_traceable(self, node):
+        known_tags = [t.tag for t in self.traceables_set]
+        if node.tag in known_tags:
+            raise ValueError("More than one traceable with tag '{0}' "
+                             "found!".format(node.tag))
         self.traceables_set.add(node)
 
     @property

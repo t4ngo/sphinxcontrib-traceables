@@ -128,7 +128,10 @@ class TraceableDirective(Directive):
                                                           target_node)
 
         traceable = Traceable(target_node)
-        TraceablesStorage(env).add_traceable(traceable)
+        try:
+            TraceablesStorage(env).add_traceable(traceable)
+        except ValueError, e:
+            env.warn_node(e.message, target_node)
 
         return [target_node, index_node, presentation_node]
 

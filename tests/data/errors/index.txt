@@ -1,0 +1,11 @@
+
+.. traceable:: SAGITTA
+  :title: Sagitta 1
+
+.. traceable:: SAGITTA
+  :title: Sagitta 2
+
+.. traceable:: AQUILA
+  :parents: SAGITTA
+
+The traceable :traceable:`SAGITTA` is doubly defined.
