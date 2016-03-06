@@ -9,6 +9,7 @@
 
 .. traceable:: AQUILA
   :parents: SAGITTA
+  :title:
 
   Content of AQUILA.
   This traceable is related to :traceable:`SAGITTA`.

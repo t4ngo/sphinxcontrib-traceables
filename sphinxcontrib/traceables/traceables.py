@@ -103,7 +103,13 @@ class TraceableDirective(Directive):
         return admonition_node
 
     def create_title_node(self, env, tag, attributes):
-        title_attribute = attributes.get("title", "").strip()
+        # Sanitize title.
+        title_attribute = attributes.get("title", "")
+        if title_attribute is None:
+            title_attribute = ""
+        title_attribute = title_attribute.strip()
+
+        # Construct title mode.
         messages = []
         if title_attribute:
             parsed_title_nodes, new_messages = \
@@ -115,9 +121,11 @@ class TraceableDirective(Directive):
             title_content += parsed_title_nodes
         else:
             title_content = nodes.literal(text=tag)
+
         title_node = nodes.title(tag, "", title_content)
         title_node.source, title_node.line = (
             self.state_machine.get_source_and_line(self.lineno))
+
         return [title_node] + messages
 
     def run(self):
