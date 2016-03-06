@@ -2,6 +2,7 @@
 import os
 from xml.etree import ElementTree
 from utils import with_app, pretty_print_xml
+from HTMLParser import HTMLParser
 
 
 # =============================================================================
@@ -38,3 +39,33 @@ def test_basics(app, status, warning):
     assert (warning.getvalue().find(
         "WARNING: Traceables: no traceable with tag"
         " 'NONEXISTENT' found!") > 0)
+
+
+@with_app(buildername="html", srcdir="basics")
+def test_basics(app, status, warning):
+    app.build()
+    with open(app.outdir / "index.html") as index_file:
+        index_html = index_file.read()
+#    print index_html
+
+    # Verify that all traceable's have an ID.
+    verifier = HTMLTraceableIdVerifier()
+    verifier.feed(index_html)
+
+
+class HTMLTraceableIdVerifier(HTMLParser):
+
+    def handle_starttag(self, tag, attribute_list):
+        # Process only the divs of traceable definitions.
+        if tag != "div":
+            return
+        attributes = dict(attribute_list)
+        classes = attributes.get("class", "").split()
+        if "admonition" not in classes or "traceable" not in classes:
+            return
+
+        # Verify that the traceable's div has an ID attribute.
+        assert "id" in attributes, (
+               'Expected traceable directive div to have an "id" '
+               'attribute, but none found: {0!r}'
+               .format(self.get_starttag_text()))

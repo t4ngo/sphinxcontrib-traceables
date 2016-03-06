@@ -83,6 +83,10 @@ class TraceableDirective(Directive):
         admonition_node = nodes.admonition()
         admonition_node["classes"] += ["traceable"]
 
+        # Assign the traceable's unique ID to the admonition node, so
+        # that HTML bookmarks ("somewhere.html#bookmark") work.
+        admonition_node["ids"].append(target_node["refid"])
+
         # Construct title node.
         admonition_node += self.create_title_node(env, tag, attributes)
 

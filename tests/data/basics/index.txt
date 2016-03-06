@@ -1,4 +1,8 @@
 
+.. toctree::
+
+  reference
+
 .. traceable:: SAGITTA
   :title: Sagitta
   :random-attribute: Some random value

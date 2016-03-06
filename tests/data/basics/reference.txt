@@ -1,0 +1,11 @@
+
+.. traceable:: LYRA
+   :title: Lyra
+   :constellation: Hercules
+   :parents: SAGITTA
+   :color: blue
+   :version: 0.9
+
+The traceable :traceable:`SAGITTA` is defined on a different page.
+
+The traceable :traceable:`LYRA` is defined on this page.
