@@ -9,6 +9,7 @@ import collections
 import textwrap
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
+import sphinx
 from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.roles import XRefRole
@@ -74,8 +75,12 @@ class TraceableDirective(Directive):
         return target_node
 
     def create_index_node(self, env, tag, attributes):
+        if sphinx.version_info[:2] < (1, 4):  # Sphinx earlier than v1.4
+            entries = [("single", tag, tag, "")]
+        else:  # Sphinx v1.4 and later
+            entries = [("single", tag, tag, "", None)]
         index_node = addnodes.index()
-        index_node["entries"] = [("single", tag, tag, "")]
+        index_node["entries"] = entries
         return index_node
 
     def create_presentation_node(self, env, tag, attributes, target_node):
