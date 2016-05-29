@@ -1,6 +1,6 @@
 
 import os
-import sphinx_testing
+import sphinx_tests_util
 from xml.etree import ElementTree
 from xml.dom import minidom
 
@@ -24,4 +24,4 @@ def with_app(*args, **kwargs):
     kwargs = kwargs.copy()
     if "srcdir" in kwargs:
         kwargs["srcdir"] = srcdir(kwargs["srcdir"])
-    return sphinx_testing.with_app(*args, **kwargs)
+    return sphinx_tests_util.with_app(*args, **kwargs)
