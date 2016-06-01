@@ -9,8 +9,8 @@ from HTMLParser import HTMLParser
 # Tests
 
 @with_app(buildername="xml", srcdir="basics")
-def test_basics(app, status, warning):
-    app.build()
+def test_xml_basics(app, status, warning):
+    app.builder.build_all()
     tree = ElementTree.parse(app.outdir / "index.xml")
 
     # Verify that 2 traceables are found.
@@ -42,11 +42,10 @@ def test_basics(app, status, warning):
 
 
 @with_app(buildername="html", srcdir="basics")
-def test_basics(app, status, warning):
-    app.build()
+def test_html_builder(app, status, warning):
+    app.builder.build_all()
     with open(app.outdir / "index.html") as index_file:
         index_html = index_file.read()
-#    print index_html
 
     # Verify that all traceable's have an ID.
     verifier = HTMLTraceableIdVerifier()
@@ -69,3 +68,10 @@ class HTMLTraceableIdVerifier(HTMLParser):
                'Expected traceable directive div to have an "id" '
                'attribute, but none found: {0!r}'
                .format(self.get_starttag_text()))
+
+
+@with_app(buildername="latex", srcdir="basics")
+def test_latex_builder(app, status, warning):
+    app.builder.build_all()
+#    with open(app.outdir / "Python.tex") as index_file:
+#        index_tex = index_file.read()

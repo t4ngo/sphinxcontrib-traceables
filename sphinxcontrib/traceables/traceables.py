@@ -253,7 +253,11 @@ class AttributeListsProcessor(ProcessorBase):
         for attribute_name, attribute_value in sorted(attributes.items()):
             field_node = nodes.field()
             field_node += nodes.field_name(text=attribute_name)
-            content = nodes.inline(text=attribute_value)
+
+            # Prepend space to avoid bug in the LaTeX builder of Sphinx v1.4
+            # which can cause \leavevmode to be stuck to following text.
+            content = nodes.inline(text=" " + attribute_value)
+
             field_node += nodes.field_body("", content)
             field_list_node += field_node
 
