@@ -31,6 +31,7 @@ class TraceableGraphDirective(Directive):
     option_spec = {
         "tags": directives.unchanged_required,
         "relationships": directives.unchanged_required,
+        "caption": directives.unchanged,
     }
     has_content = True
 
@@ -41,7 +42,10 @@ class TraceableGraphDirective(Directive):
         node.lineno = self.lineno
         node["traceable-tags"] = self.options["tags"]
         node["traceable-relationships"] = self.options.get("relationships")
-        return [node]
+        caption = self.options.get("caption") or "Traceable graph"
+        node["traceable-caption"] = caption
+        figure_node = graphviz.figure_wrapper(self, node, caption)
+        return [figure_node]
 
 
 # =============================================================================
@@ -76,11 +80,9 @@ class GraphProcessor(ProcessorBase):
             # Generate diagram input and create output node.
             graphviz_node = graphviz.graphviz()
             graphviz_node["code"] = self.generate_dot(graph_input)
-            graphviz_node["options"] = []
-            graphviz_node["inline"] = False
-#            caption = "Relationship diagram for {0}".format(traceable.tag)
-#            figure_node = graphviz.figure_wrapper(self, graphviz_node,
-#                                                  caption)
+            graphviz_node["options"] = {}
+            caption = graph_node.get("traceable-caption", "Traceables graph")
+            graphviz_node["alt"] = caption
             graph_node.replace_self(graphviz_node)
 
     def get_start_traceables(self, tags_string, node):
