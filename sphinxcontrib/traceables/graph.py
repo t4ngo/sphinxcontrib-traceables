@@ -65,8 +65,14 @@ class GraphProcessor(ProcessorBase):
             start_traceables = self.get_start_traceables(start_tags,
                                                          graph_node)
             if not start_traceables:
-                self.env.warn_node("Traceables: no valid tags for graph,"
-                                   " so skipping graph", graph_node)
+                message = ("Traceables: no valid tags for graph,"
+                           " so skipping graph")
+                self.env.warn_node(message, graph_node)
+                msg = nodes.system_message(message=message,
+                                           level=2, type="ERROR",
+                                           source=graph_node.docname,
+                                           line=graph_node.lineno)
+                graph_node.replace_self(msg)
                 continue
 
             # Determine relationships to include in graph.

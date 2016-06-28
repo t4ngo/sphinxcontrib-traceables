@@ -24,3 +24,13 @@ def test_graph_html(app, status, warning):
     with (app.outdir / "index.html").open('rb') as index_html_file:
         index_html = index_html_file.read()
     assert re.search('<img src="_images/graphviz-[^"]+.png"', index_html)
+
+@with_app(buildername="html", srcdir="graph_error")
+def test_graph_no_valid_start_tags(app, status, warning):
+    app.build()
+
+    # Verify that output contains link to graph.
+    with (app.outdir / "index.html").open('rb') as index_html_file:
+        index_html = index_html_file.read()
+    assert re.search("Traceables: no valid tags for graph,"
+                     " so skipping graph", index_html)
