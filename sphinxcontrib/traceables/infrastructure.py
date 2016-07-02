@@ -132,6 +132,9 @@ class Traceable(object):
                              .format(other.__class__.__name__))
         return self.tag < other.tag
 
+    def has_title(self):
+        return "title" in self.attributes
+
     @property
     def title(self):
         title = self.attributes.get("title")
