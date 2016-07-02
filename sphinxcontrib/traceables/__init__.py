@@ -1,5 +1,6 @@
 
 import infrastructure
+import display
 import traceables
 import matrix
 import graph
@@ -22,8 +23,7 @@ def setup(app):
     # here to ensure correct ordering during processing.
     traceables.infrastructure.ProcessorManager.register_processor_classes([
         traceables.traceables.RelationshipsProcessor,
-        traceables.traceables.TraceableDisplayProcessor,
-        traceables.traceables.AttributeListsProcessor,
+        traceables.display.TraceableDisplayProcessor,
         traceables.traceables.XrefProcessor,
         traceables.matrix.ListProcessor,
         traceables.matrix.MatrixProcessor,
