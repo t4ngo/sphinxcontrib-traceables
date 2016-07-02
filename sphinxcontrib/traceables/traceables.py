@@ -23,6 +23,10 @@ from .infrastructure import ProcessorBase, Traceable, TraceablesStorage
 # =============================================================================
 # Node types
 
+class traceable_display(nodes.General, nodes.Element):
+    pass
+
+
 class traceable_attribute_list(nodes.General, nodes.Element):
     pass
 
@@ -83,66 +87,14 @@ class TraceableDirective(Directive):
         index_node["entries"] = entries
         return index_node
 
-    def create_presentation_node(self, env, tag, attributes, target_node):
-        # Initialize admonition node.
-        admonition_node = nodes.admonition()
-        admonition_node["classes"] += ["traceable"]
-
-        # Assign the traceable's unique ID to the admonition node, so
-        # that HTML bookmarks ("somewhere.html#bookmark") work.
-        admonition_node["ids"].append(target_node["refid"])
-
-        # Construct title node.
-        admonition_node += self.create_title_node(env, tag, attributes)
-
-        # Construct placeholder node for attribute list.
-        attribute_list_node = traceable_attribute_list()
-        attribute_list_node["traceable-tag"] = tag
-        attribute_list_node["traceable-target"] = target_node
-        attribute_list_node["traceable-attributes"] = attributes
-        admonition_node += attribute_list_node
-
-        # Finalize admonition node.
-        self.state.nested_parse(self.content, self.content_offset,
-                                admonition_node)
-        return admonition_node
-
-    def create_title_node(self, env, tag, attributes):
-        # Sanitize title.
-        title_attribute = attributes.get("title", "")
-        if title_attribute is None:
-            title_attribute = ""
-        title_attribute = title_attribute.strip()
-
-        # Construct title mode.
-        messages = []
-        if title_attribute:
-            parsed_title_nodes, new_messages = \
-                self.state.inline_text(title_attribute, self.lineno)
-            messages.extend(new_messages)
-            title_content = nodes.inline()
-            title_content += nodes.literal(text=tag)
-            title_content += nodes.inline(text=" -- ")
-            title_content += parsed_title_nodes
-        else:
-            title_content = nodes.literal(text=tag)
-
-        title_node = nodes.title(tag, "", title_content)
-        title_node.source, title_node.line = (
-            self.state_machine.get_source_and_line(self.lineno))
-
-        return [title_node] + messages
-
     def run(self):
         env = self.state.document.settings.env
         tag = self.arguments[0]
         attributes = self.options
+        format = attributes.pop("format", "admonition")
 
         target_node = self.create_target_node(env, tag, attributes)
         index_node = self.create_index_node(env, tag, attributes)
-        presentation_node = self.create_presentation_node(env, tag,
-                                                          attributes,
-                                                          target_node)
 
         traceable = Traceable(target_node)
         try:
@@ -160,7 +112,19 @@ class TraceableDirective(Directive):
             #                               line=node.line)
             #    node.replace_self(msg)
 
-        return [target_node, index_node, presentation_node]
+        # Construct placeholder node for traceable display.
+        display_node = traceable_display()
+        display_node["source"] = env.docname
+        display_node["lineno"] = self.lineno
+        display_node["traceable-tag"] = tag
+        display_node["traceable-format"] = format
+        display_node["traceable-options"] = {}
+
+        # Insert remaining content into placeholder.
+        self.state.nested_parse(self.content, self.content_offset,
+                                display_node)
+
+        return [target_node, index_node, display_node]
 
 
 # =============================================================================
@@ -212,6 +176,41 @@ class RelationshipsProcessor(ProcessorBase):
         level1 = relationships.setdefault(tag2, {})
         level2 = level1.setdefault(secondary, set())
         level2.add(tag1)
+
+
+class TraceableDisplayProcessor(ProcessorBase):
+
+    formatters = {}
+
+    @classmethod
+    def register_formatter(cls, name, formatter):
+        cls.formatters[name] = formatter
+
+    def process_doctree(self, doctree, docname):
+        for old_node in doctree.traverse(traceable_display):
+            new_node = self.create_traceable_display(docname, old_node)
+            old_node.replace_self(new_node)
+
+    def create_traceable_display(self, docname, display_node):
+        tag = display_node["traceable-tag"]
+        traceable = self.storage.get_traceable_by_tag(tag)
+
+        format = display_node["traceable-format"]
+        format_options = display_node.get("traceable-format-options")
+        formatter = self.formatters.get(format)
+        if not formatter:
+            message = ("Unknown formatter name: '{0}';"
+                       " available formatters: {1}"
+                       .format(format, ", ".join(self.formatters.keys())))
+            self.env.warn_node(message, display_node)
+            return [nodes.system_message(message=message,
+                                         level=2, type="ERROR",
+                                         source=display_node["source"],
+                                         line=display_node["lineno"])]
+        return formatter.format(self.app, docname, display_node, traceable,
+                                format_options)
+
+#        return self.create_title_node(traceable)
 
 
 class AttributeListsProcessor(ProcessorBase):
@@ -276,6 +275,224 @@ class XrefProcessor(ProcessorBase):
             new_node = traceable.make_reference_node(self.app.builder,
                                                      docname)
             xref_node.replace_self(new_node)
+
+
+# =============================================================================
+# Built-in formatters
+
+class TraceableDisplayAdmonitionFormatter(object):
+
+    def format(self, app, docname, node, traceable, options):
+        env = app.builder.env
+
+        admonition = nodes.admonition()
+        admonition["classes"] += ["traceable"]
+
+        # Assign the traceable's unique ID to the admonition node, so
+        # that HTML bookmarks ("somewhere.html#bookmark") work.
+        admonition["ids"].append(traceable.target_node["refid"])
+
+        # Construct title node.
+        admonition += self.create_title_node(traceable)
+
+        # Construct placeholder node for attribute list.
+        attribute_list = traceable_attribute_list()
+        attribute_list["traceable-tag"] = traceable.tag
+        attribute_list["traceable-target"] = traceable.target_node
+        attribute_list["traceable-attributes"] = traceable.attributes
+        admonition += attribute_list
+
+        # Fill content of admonition node.
+        while node.children:
+            admonition += node.children.pop(0)
+
+        return [admonition]
+
+    def create_title_node(self, traceable):
+        # Construct title mode.
+        if traceable.has_title():
+            title_content = nodes.inline()
+            title_content += nodes.literal(text=traceable.tag)
+            title_content += nodes.inline(text=" -- ")
+            title_content += nodes.inline(text=traceable.title)
+        else:
+            title_content = nodes.literal(text=traceable.tag)
+
+        title_node = nodes.inline()
+        title_node += title_content
+
+        return [title_node]
+
+    def create_attribute_list_node(self, traceable):
+        relationships = traceable.relationships
+
+        # Determine which attributes to list in which order.
+        attributes = traceable.attributes.copy()
+        for relationship_name in relationships.keys():
+            attributes.pop(relationship_name, None)
+        attributes.pop("title", None)
+
+        # Create node to contain list of attributes.
+        field_list_node = nodes.field_list()
+
+        # Add relationship attributes.
+        for relationship_name, relatives in sorted(relationships.items()):
+            field_node = nodes.field()
+            field_node += nodes.field_name(text=relationship_name)
+            content = nodes.inline()
+            for relative in sorted(relatives, key=lambda t: t.tag):
+                if len(content):
+                    content += nodes.inline(text=", ")
+                content += relative.make_reference_node(self.app.builder,
+                                                        docname)
+            field_node += nodes.field_body("", content)
+            field_list_node += field_node
+
+        # Add non-relationship attributes.
+        for attribute_name, attribute_value in sorted(attributes.items()):
+            field_node = nodes.field()
+            field_node += nodes.field_name(text=attribute_name)
+
+            # Prepend space to avoid bug in the LaTeX builder of Sphinx v1.4
+            # which can cause \leavevmode to be stuck to following text.
+            content = nodes.inline(text=" " + attribute_value)
+
+            field_node += nodes.field_body("", content)
+            field_list_node += field_node
+
+        return field_list_node
+
+
+TraceableDisplayProcessor.register_formatter(
+    "admonition", TraceableDisplayAdmonitionFormatter())
+
+
+class TraceableDisplayBlockFormatter(object):
+
+    def format(self, app, docname, node, traceable, options):
+        env = app.builder.env
+
+        table = nodes.table()
+        tgroup = nodes.tgroup(cols=2, colwidths="auto")
+        table += tgroup
+
+        # Add column specifications.
+        tgroup += nodes.colspec(colwidth=50)
+        tgroup += nodes.colspec(colwidth=50)
+
+        # Add heading row.
+        thead = nodes.thead()
+        tgroup += thead
+        row = nodes.row()
+        thead += row
+        entry = nodes.entry(morecols=1)
+        row += entry
+        entry += self.create_title_node(traceable)
+
+        # Add table body.
+        tbody = nodes.tbody()
+        tgroup += tbody
+
+        # Determine which attributes to list in which order.
+        relationships = traceable.relationships
+        attributes = traceable.attributes.copy()
+        for relationship_name in relationships.keys():
+            attributes.pop(relationship_name, None)
+        attributes.pop("title", None)
+
+        # Add relationship attributes.
+        for relationship_name, relatives in sorted(relationships.items()):
+            first = True
+            for relative in sorted(relatives, key=lambda t: t.tag):
+                row = nodes.row()
+                tbody += row
+
+                entry = nodes.entry()
+                row += entry
+                if first:
+                    entry += nodes.inline(text=" " + relationship_name)
+                    first = False
+
+                entry = nodes.entry()
+                row += entry
+                entry += relative.make_reference_node(app.builder,
+                                                      docname)
+
+        # Add non-relationship attributes.
+        for attribute_name, attribute_value in sorted(attributes.items()):
+            row = nodes.row()
+            tbody += row
+
+            entry = nodes.entry()
+            row += entry
+            entry += nodes.inline(text=" " + attribute_name)
+
+            entry = nodes.entry()
+            row += entry
+            # Prepend space to avoid bug in the LaTeX builder of Sphinx v1.4
+            # which can cause \leavevmode to be stuck to following text.
+            content = nodes.inline(text=" " + attribute_value)
+            entry += content
+
+        return [table]
+
+    def create_title_node(self, traceable):
+        # Construct title mode.
+        if traceable.has_title():
+            title_content = nodes.inline()
+            title_content += nodes.literal(text=traceable.tag)
+            title_content += nodes.inline(text=" -- ")
+            title_content += nodes.inline(text=traceable.title)
+        else:
+            title_content = nodes.literal(text=traceable.tag)
+
+        title_node = nodes.inline()
+        title_node += title_content
+
+        return [title_node]
+
+    def create_attribute_list_node(self, traceable):
+        relationships = traceable.relationships
+
+        # Determine which attributes to list in which order.
+        attributes = traceable.attributes.copy()
+        for relationship_name in relationships.keys():
+            attributes.pop(relationship_name, None)
+        attributes.pop("title", None)
+
+        # Create node to contain list of attributes.
+        field_list_node = nodes.field_list()
+
+        # Add relationship attributes.
+        for relationship_name, relatives in sorted(relationships.items()):
+            field_node = nodes.field()
+            field_node += nodes.field_name(text=relationship_name)
+            content = nodes.inline()
+            for relative in sorted(relatives, key=lambda t: t.tag):
+                if len(content):
+                    content += nodes.inline(text=", ")
+                content += relative.make_reference_node(self.app.builder,
+                                                        docname)
+            field_node += nodes.field_body("", content)
+            field_list_node += field_node
+
+        # Add non-relationship attributes.
+        for attribute_name, attribute_value in sorted(attributes.items()):
+            field_node = nodes.field()
+            field_node += nodes.field_name(text=attribute_name)
+
+            # Prepend space to avoid bug in the LaTeX builder of Sphinx v1.4
+            # which can cause \leavevmode to be stuck to following text.
+            content = nodes.inline(text=" " + attribute_value)
+
+            field_node += nodes.field_body("", content)
+            field_list_node += field_node
+
+        return field_list_node
+
+
+TraceableDisplayProcessor.register_formatter(
+    "block", TraceableDisplayBlockFormatter())
 
 
 # =============================================================================

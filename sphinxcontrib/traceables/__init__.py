@@ -22,6 +22,7 @@ def setup(app):
     # here to ensure correct ordering during processing.
     traceables.infrastructure.ProcessorManager.register_processor_classes([
         traceables.traceables.RelationshipsProcessor,
+        traceables.traceables.TraceableDisplayProcessor,
         traceables.traceables.AttributeListsProcessor,
         traceables.traceables.XrefProcessor,
         traceables.matrix.ListProcessor,
