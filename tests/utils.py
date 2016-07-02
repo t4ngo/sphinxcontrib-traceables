@@ -22,6 +22,13 @@ def pretty_print_xml(node):
 
 def with_app(*args, **kwargs):
     kwargs = kwargs.copy()
+
+    # Expand test data directory.
     if "srcdir" in kwargs:
         kwargs["srcdir"] = srcdir(kwargs["srcdir"])
+
+    # By default use a fresh build environment.
+    if "freshenv" not in kwargs:
+        kwargs["freshenv"] = True
+
     return sphinx_tests_util.with_app(*args, **kwargs)
