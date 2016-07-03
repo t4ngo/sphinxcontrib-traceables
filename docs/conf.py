@@ -9,6 +9,7 @@ from glob import glob
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
 ]
 
 # -------------------------------------------------------------------------

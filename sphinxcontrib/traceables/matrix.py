@@ -198,7 +198,7 @@ class MatrixProcessor(ProcessorBase):
 
         container = traceable_matrix_crosstable()
         container += table
-        container["matrix"] = matrix
+        container["traceables-matrix"] = matrix
 #        backward = matrix.backward_relationship.capitalize()
 #        forward = matrix.forward_relationship.capitalize()
 #        container["relationships"] = (forward, backward)
@@ -253,18 +253,52 @@ class MatrixProcessor(ProcessorBase):
 # Node types
 
 class traceable_list(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a list of traceables.
+
+    Attributes:
+        traceable-filter: The filter expression to determine which
+            traceables to include in the output.
+
+    """
+
     pass
 
 
 class traceable_matrix(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a traceables matrix.
+
+    Attributes:
+        traceables-relationship: The name of the relationship to display
+            between primary and secondary traceables.
+        traceables-format: The name of the format with which to display
+            the data.
+        traceables-max-primaries: Format-specific option.
+        traceables-max-secondaries: Format-specific option.
+
+    """
+
     pass
 
 
 class traceable_matrix_crosstable(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a builder-specific matrix.
+
+    Attributes:
+        traceables-matrix: Instance of :obj:`TraceableMatrix` storing
+            data to be presented in the output.
+
+    """
+
     pass
 
 
 class traceable_checkmark(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a builder-specific checkmark symbol.
+
+    This node type has no traceable-specific attributes.
+
+    """
+
     pass
 
 
@@ -327,7 +361,7 @@ passthrough = (visit_passthrough, depart_passthrough)
 
 
 def visit_traceable_matrix_crosstable_latex(self, node):
-    matrix = node["matrix"]
+    matrix = node["traceables-matrix"]
     num_columns = len(matrix.secondaries)
     forward_relationship = matrix.forward_relationship.capitalize()
     backward_relationship = matrix.backward_relationship.capitalize()

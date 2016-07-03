@@ -15,6 +15,15 @@ from .infrastructure import ProcessorBase, Traceable, TraceablesStorage
 # Node types
 
 class traceable_display(nodes.General, nodes.Element):
+    """Placeholder node for displaying a single traceable.
+
+    Attributes:
+        traceable-tag: The tag of the traceable to display.
+        traceable-format: The format in which to display the traceable.
+        traceable-format-options: Options specific for the display format.
+
+    """
+
     pass
 
 
