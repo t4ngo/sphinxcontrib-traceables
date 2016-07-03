@@ -9,6 +9,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 
 from .infrastructure import ProcessorBase, Traceable, TraceablesStorage
+from .utils import passthrough, latex_escape
 
 
 # =============================================================================
@@ -21,6 +22,18 @@ class traceable_display(nodes.General, nodes.Element):
         traceable-tag: The tag of the traceable to display.
         traceable-format: The format in which to display the traceable.
         traceable-format-options: Options specific for the display format.
+
+    """
+
+    pass
+
+
+class traceable_display_table(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a builder-specific table display.
+
+    Attributes:
+        traceables-traceable: Instance of :obj:`Traceable` to be presented
+            in the output.
 
     """
 
@@ -54,10 +67,12 @@ class TraceableDisplayProcessor(ProcessorBase):
                        " available formatters: {1}"
                        .format(format, ", ".join(self.formatters.keys())))
             self.env.warn_node(message, display_node)
-            return [nodes.system_message(message=message,
-                                         level=2, type="ERROR",
-                                         source=display_node["source"],
-                                         line=display_node["lineno"])]
+            new_nodes = [nodes.system_message(message=message,
+                                              level=2, type="ERROR",
+                                              source=display_node["source"],
+                                              line=display_node["lineno"])]
+            display_node.replace_self(new_nodes)
+            return
 
         new_nodes = formatter.format(self.app, docname, display_node, traceable,
                                      format_options)
@@ -86,6 +101,8 @@ class TraceableDisplayFormatterBase(object):
 
         return [title_node]
 
+
+# -----------------------------------------------------------------------------
 
 class TraceableDisplayAdmonitionFormatter(TraceableDisplayFormatterBase):
 
@@ -149,11 +166,9 @@ class TraceableDisplayAdmonitionFormatter(TraceableDisplayFormatterBase):
         return field_list_node
 
 
-TraceableDisplayProcessor.register_formatter(
-    "admonition", TraceableDisplayAdmonitionFormatter())
+# -----------------------------------------------------------------------------
 
-
-class TraceableDisplayBlockFormatter(TraceableDisplayFormatterBase):
+class TraceableDisplayTableFormatter(TraceableDisplayFormatterBase):
 
     def format(self, app, docname, node, traceable, options):
         env = app.builder.env
@@ -220,15 +235,117 @@ class TraceableDisplayBlockFormatter(TraceableDisplayFormatterBase):
             content = nodes.inline(text=" " + attribute_value)
             entry += content
 
-        return [table]
+        wrapper = traceable_display_table()
+        wrapper["traceables-traceable"] = traceable
+        wrapper += table
+
+        return [wrapper] + node.children
+
+    @staticmethod
+    def visit_latex(translator, node):
+        traceable = node["traceables-traceable"]
+
+        lines = []
+#        lines.append(r"\setlength\LTleft{0pt}")
+#        lines.append(r"\setlength\LTright{0pt}")
+        lines.append(r"\begin{longtable}{ll}")
+        lines.append(r"\hline")
+        lines.append(r"\multicolumn{2}{l}{\textbf{\textsc{%s} -- %s}} \\"
+                     % (latex_escape(traceable.tag.lower()),
+                        latex_escape(traceable.title)))
+        lines.append(r"\hline")
+
+        # Determine which attributes to list in which order.
+        relationships = traceable.relationships
+        attributes = traceable.attributes.copy()
+        for relationship_name in relationships.keys():
+            attributes.pop(relationship_name, None)
+        attributes.pop("title", None)
+
+        # Add relationship attributes.
+        for relationship_name, relatives in sorted(relationships.items()):
+            first = True
+            for relative in sorted(relatives, key=lambda t: t.tag):
+                if first:
+                    lines.append(r"{%s} & {\textsc{%s}%s} \\"
+                                 % (latex_escape(relationship_name),
+                                    latex_escape(relative.tag.lower()),
+                                    latex_escape(" -- " + relative.title)))
+                    first = False
+                else:
+                    lines.append(r" & {\textsc{%s}%s} \\"
+                                 % (latex_escape(relative.tag.lower()),
+                                    latex_escape(" -- " + relative.title)))
+
+        # Add non-relationship attributes.
+        for attribute_name, attribute_value in sorted(attributes.items()):
+            lines.append(r"{%s} & {%s} \\"
+                         % (latex_escape(attribute_name),
+                            latex_escape(attribute_value)))
+
+        lines.append(r"\hline")
+        lines.append(r"\end{longtable}")
+
+        translator.body.append("\n".join(lines))
+        raise nodes.SkipNode
 
 
-TraceableDisplayProcessor.register_formatter(
-    "block", TraceableDisplayBlockFormatter())
+
+        matrix = node["traceables-matrix"]
+        num_columns = len(matrix.secondaries)
+        forward_relationship = matrix.forward_relationship.capitalize()
+        backward_relationship = matrix.backward_relationship.capitalize()
+
+        lines = []
+        lines.append(r"\begin{longtable}{@{} cl*{%d}c @{}}" % num_columns)
+        lines.append(r" & & \multicolumn{%d}{c}{%s} \\[2ex]"
+                     % (num_columns, latex_escape(forward_relationship)))
+        headers = [r"\rotatebox{90}{%s}"
+                   % latex_escape(head.tag) for head in matrix.secondaries]
+        lines.append(r" & & " + r" & ".join(headers) + r"\\")
+        lines.append(r"\cmidrule{2-%d}" % (num_columns + 2))
+        for index, primary in enumerate(matrix.primaries):
+            boolean_row = matrix.get_boolean_row(primary)
+            if index > 0:
+                # Add horizontal rule above all but the first row.
+                lines.append(r"\cmidrule[0.05pt]{2-%d}" % (num_columns + 2))
+            checkmarks = [r"\checkmark" if boolean else ""
+                          for boolean in boolean_row]
+            if index == 0:
+                # Add backward relationship name only once.
+                lines.append(r"\rotatebox{90}{\llap{%s}}"
+                             % latex_escape(backward_relationship))
+            lines.append(" & %s & " % latex_escape(primary.tag) +
+                         " & ".join(checkmarks) + r"\\")
+            lines.append(r"\cmidrule{2-%d}" % (num_columns + 2))
+        lines.append(r"\end{longtable}")
+
+        translator.body.append("\n".join(lines))
+        raise nodes.SkipNode
+
+
+# -----------------------------------------------------------------------------
+
+class TraceableDisplayHiddenFormatter(TraceableDisplayFormatterBase):
+
+    def format(self, app, docname, node, traceable, options):
+        return []
 
 
 # =============================================================================
 # Setup this extension part
 
+TraceableDisplayProcessor.register_formatter("admonition",
+    TraceableDisplayAdmonitionFormatter())
+TraceableDisplayProcessor.register_formatter("table",
+    TraceableDisplayTableFormatter())
+TraceableDisplayProcessor.register_formatter("hidden",
+    TraceableDisplayHiddenFormatter())
+
 def setup(app):
+
     app.add_node(traceable_display)
+    app.add_node(traceable_display_table,
+         html=passthrough,
+         latex=(TraceableDisplayTableFormatter.visit_latex,
+                None))
