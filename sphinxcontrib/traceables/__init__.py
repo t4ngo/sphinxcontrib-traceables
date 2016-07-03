@@ -15,6 +15,7 @@ def setup(app):
 
     # Allow extension parts to set themselves up.
     traceables.infrastructure.setup(app)
+    traceables.display.setup(app)
     traceables.traceables.setup(app)
     traceables.matrix.setup(app)
     traceables.graph.setup(app)
