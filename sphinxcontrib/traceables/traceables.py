@@ -189,7 +189,10 @@ class XrefProcessor(ProcessorBase):
 # Define defaults for config values
 
 default_relationships = [
-    ("parents",  "children",    True),
+    # 3-tuples: (name-at-source-traceable,
+    #            name-at-destination-traceable,
+    #            directional-or-not)
+    ("children", "parents",     True),
     ("sibling",  "sibling",     False),
     ("output",   "created-in",  True),
     ("used-in",  "input",       True),
