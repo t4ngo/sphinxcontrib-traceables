@@ -216,8 +216,10 @@ class TraceableDisplayTableFormatter(TraceableDisplayFormatterBase):
 
                 entry = nodes.entry()
                 row += entry
-                entry += relative.make_reference_node(app.builder,
-                                                      docname)
+                inline = nodes.inline()
+                entry += inline
+                inline += relative.make_reference_node(app.builder,
+                                                       docname)
 
         # Add non-relationship attributes.
         for attribute_name, attribute_value in sorted(attributes.items()):
