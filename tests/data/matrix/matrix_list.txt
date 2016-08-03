@@ -1,9 +1,16 @@
 List matrix
 ==============================================================================
 
-Default options
+Relationship "parents"
 ------------------------------------------------------------------------------
 
 .. traceable-matrix::
    :relationship: parents
+   :format: list
+
+Relationship "children"
+------------------------------------------------------------------------------
+
+.. traceable-matrix::
+   :relationship: children
    :format: list

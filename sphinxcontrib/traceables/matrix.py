@@ -10,7 +10,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from sphinx.util.texescape import tex_escape_map
 
-from .infrastructure import ProcessorBase, TraceablesFilter
+from .infrastructure import FormatProcessorBase, TraceablesFilter
 from .utils import passthrough, latex_escape
 
 
@@ -64,12 +64,13 @@ class traceable_checkmark(nodes.General, nodes.Element):
 # =============================================================================
 # Processors
 
-class MatrixProcessor(ProcessorBase):
+class MatrixProcessor(FormatProcessorBase):
 
     def __init__(self, app):
-        ProcessorBase.__init__(self, app, traceable_matrix)
+        FormatProcessorBase.__init__(self, app, traceable_matrix)
 
-    def process_node(self, matrix_node, doctree, docname):
+    def process_node_with_formatter(self, matrix_node, formatter,
+                                    doctree, docname):
         relationship = matrix_node["traceables-relationship"]
         if not self.storage.is_valid_relationship(relationship):
             raise self.Error("Invalid relationship: {0}"
@@ -89,9 +90,9 @@ class MatrixProcessor(ProcessorBase):
             "split-secondaries":
                 matrix_node.get("traceables-split-secondaries"),
         }
-        formatter = self.get_formatter_method(options["format"])
-        new_node = formatter(matrix, options, docname)
-        matrix_node.replace_self(new_node)
+        new_nodes = formatter.format(self.app, docname, matrix_node,
+                                     matrix, options)
+        matrix_node.replace_self(new_nodes)
 
     def build_traceable_matrix(self, forward, filter1, filter2):
         # Create empty relationship matrix.
@@ -128,7 +129,23 @@ class MatrixProcessor(ProcessorBase):
 
         return matrix
 
-    def create_list_table(self, matrix, options, docname):
+
+# =============================================================================
+# Built-in formatters
+
+class MatrixFormatterBase(object):
+
+    def format(self, app, docname, node, matrix, options):
+        raise NotImplementedError()
+
+
+# -----------------------------------------------------------------------------
+
+class TwoColumnMatrixFormatter(MatrixFormatterBase):
+
+    def format(self, app, docname, node, matrix, options):
+#        env = app.builder.env
+
         table = nodes.table()
         tgroup = nodes.tgroup(cols=2, colwidths="auto")
         table += tgroup
@@ -165,8 +182,7 @@ class MatrixProcessor(ProcessorBase):
             row += entry
             paragraph = nodes.paragraph()
             entry += paragraph
-            paragraph += traceable.make_reference_node(
-                self.app.builder, docname)
+            paragraph += traceable.make_reference_node(app.builder, docname)
 
             for relative in relatives:
                 if not row:
@@ -178,19 +194,26 @@ class MatrixProcessor(ProcessorBase):
                 row += entry
                 paragraph = nodes.paragraph()
                 entry += paragraph
-                paragraph += relative.make_reference_node(
-                    self.app.builder, docname)
+                paragraph += relative.make_reference_node(app.builder, docname)
 
                 row = None
 
         return table
 
-    def create_splittable_cross_table(self, matrix, options, docname):
+
+# -----------------------------------------------------------------------------
+
+class TableMatrixFormatter(MatrixFormatterBase):
+
+    def format(self, app, docname, node, matrix, options):
+#        env = app.builder.env
+
         max_primaries = options.get("split-primaries")
         max_secondaries = options.get("split-secondaries")
         subtables = []
         for submatrix in matrix.split(max_secondaries, max_primaries):
-            subtable = self.create_cross_table(submatrix, options, docname)
+            subtable = self.create_cross_table(app, docname, node,
+                submatrix, options)
             paragraph = nodes.paragraph()
             paragraph += subtable
             subtables.append(paragraph)
@@ -198,7 +221,7 @@ class MatrixProcessor(ProcessorBase):
         container.extend(subtables)
         return container
 
-    def create_cross_table(self, matrix, options, docname):
+    def create_cross_table(self, app, docname, node, matrix, options):
         table = nodes.table()
         table["classes"].append("traceables-crosstable")
         tgroup = nodes.tgroup(cols=len(matrix.secondaries), colwidths="auto")
@@ -225,8 +248,7 @@ class MatrixProcessor(ProcessorBase):
             container += inline
             paragraph = nodes.paragraph()
             inline += paragraph
-            paragraph += secondary.make_reference_node(
-                self.app.builder, docname)
+            paragraph += secondary.make_reference_node(app.builder, docname)
 
         # Add table body.
         tbody = nodes.tbody()
@@ -238,8 +260,7 @@ class MatrixProcessor(ProcessorBase):
             row += entry
             paragraph = nodes.paragraph()
             entry += paragraph
-            paragraph += primary.make_reference_node(
-                self.app.builder, docname)
+            paragraph += primary.make_reference_node(app.builder, docname)
 
             for is_related in matrix.get_boolean_row(primary):
                 entry = nodes.entry()
@@ -261,13 +282,19 @@ class MatrixProcessor(ProcessorBase):
 #        container["secondaries"] = matrix.secondaries
         return container
 
-    def create_bullet_list(self, matrix, options, docname):
+
+# -----------------------------------------------------------------------------
+
+class BulletMatrixFormatter(MatrixFormatterBase):
+
+    def format(self, app, docname, node, matrix, options):
         new_node = nodes.bullet_list()
+
         for traceable in matrix.primaries:
             item_node = nodes.list_item()
             paragraph_node = nodes.paragraph()
             paragraph_node += traceable.make_reference_node(
-                self.app.builder, docname)
+                app.builder, docname)
             item_node += paragraph_node
 
             sublist_node = nodes.bullet_list()
@@ -275,33 +302,14 @@ class MatrixProcessor(ProcessorBase):
                 subitem_node = nodes.list_item()
                 subparagraph_node = nodes.paragraph()
                 subparagraph_node += relative.make_reference_node(
-                    self.app.builder, docname)
+                    app.builder, docname)
                 subitem_node += subparagraph_node
                 sublist_node += subitem_node
             item_node += sublist_node
 
             new_node += item_node
+
         return new_node
-
-    default_format_name = "list"
-    formats = {
-               "list": create_bullet_list,
-               "columns": create_list_table,
-               "table": create_splittable_cross_table,
-              }
-
-    def get_formatter_method(self, name):
-        if not name:
-            name = self.default_format_name
-        unbound_formatter = self.formats.get(name)
-        if not unbound_formatter:
-            raise ValueError("Invalid format: {0}".format(name))
-        return types.MethodType(unbound_formatter, self)
-
-    @classmethod
-    def directive_format_choice(cls, argument):
-        format_names = cls.formats.keys()
-        return directives.choice(argument, format_names)
 
 
 # =============================================================================
@@ -323,9 +331,9 @@ class TraceableMatrixDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
         node = traceable_matrix()
-        node.docname = env.docname
-#        node.source = env.docname
-        node.line = self.lineno
+#        node.docname = env.docname
+        node["source"] = env.docname
+        node["line"] = self.lineno
         for option in self.option_spec.keys():
             node["traceables-" + option] = self.options.get(option)
         return [node]
@@ -478,6 +486,13 @@ class TraceableMatrix(object):
 
 # =============================================================================
 # Setup this extension part
+
+MatrixProcessor.register_formatter(
+    "table", TableMatrixFormatter(), default=True)
+MatrixProcessor.register_formatter(
+    "columns", TwoColumnMatrixFormatter())
+MatrixProcessor.register_formatter(
+    "list", BulletMatrixFormatter())
 
 def setup(app):
     app.add_node(traceable_matrix)

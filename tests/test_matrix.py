@@ -12,8 +12,9 @@ def test_matrix_structure(app, status, warning):
     '''Verify generated XML structure for different matrix formats'''
     app.build()
 
-    # Verify matrix with default format.
-    tree = ElementTree.parse(app.outdir / "matrix_default.xml")
+    # Verify matrix with list format.
+    tree = ElementTree.parse(app.outdir / "matrix_list.xml")
+#    print pretty_print_xml(tree.getroot())
     # Verify that the correct number of list items were generated.
     assert len(tree.findall(".//list_item")) == 11
 

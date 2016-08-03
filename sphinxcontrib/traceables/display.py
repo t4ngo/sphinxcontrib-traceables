@@ -8,7 +8,7 @@ The ``display`` module: Formatting output of individual traceables
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 
-from .infrastructure import ProcessorBase, Traceable, TraceablesStorage
+from .infrastructure import FormatProcessorBase, Traceable, TraceablesStorage
 from .utils import passthrough, latex_escape
 
 
@@ -19,9 +19,9 @@ class traceable_display(nodes.General, nodes.Element):
     """Placeholder node for displaying a single traceable.
 
     Attributes:
-        traceable-tag: The tag of the traceable to display.
-        traceable-format: The format in which to display the traceable.
-        traceable-format-options: Options specific for the display format.
+        traceables-tag: The tag of the traceable to display.
+        traceables-format: The format in which to display the traceable.
+        traceables-format-options: Options specific for the display format.
 
     """
 
@@ -43,39 +43,19 @@ class traceable_display_table(nodes.General, nodes.Element):
 # =============================================================================
 # Processors
 
-class TraceableDisplayProcessor(ProcessorBase):
-
-    formatters = {}
-
-    @classmethod
-    def register_formatter(cls, name, formatter):
-        cls.formatters[name] = formatter
+class TraceableDisplayProcessor(FormatProcessorBase):
 
     def __init__(self, app):
-        ProcessorBase.__init__(self, app, traceable_display)
+        FormatProcessorBase.__init__(self, app, traceable_display)
 
-    def process_node(self, display_node, doctree, docname):
-        tag = display_node["traceable-tag"]
+    def process_node_with_formatter(self, display_node, formatter,
+                                    doctree, docname):
+        tag = display_node["traceables-tag"]
         traceable = self.storage.get_traceable_by_tag(tag)
 
-        format = display_node["traceable-format"]
-        format_options = display_node.get("traceable-format-options")
-        formatter = self.formatters.get(format)
-
-        if not formatter:
-            message = ("Unknown formatter name: '{0}';"
-                       " available formatters: {1}"
-                       .format(format, ", ".join(self.formatters.keys())))
-            self.env.warn_node(message, display_node)
-            new_nodes = [nodes.system_message(message=message,
-                                              level=2, type="ERROR",
-                                              source=display_node["source"],
-                                              line=display_node["lineno"])]
-            display_node.replace_self(new_nodes)
-            return
-
-        new_nodes = formatter.format(self.app, docname, display_node, traceable,
-                                     format_options)
+        format_options = display_node.get("traceables-format-options")
+        new_nodes = formatter.format(self.app, docname, display_node,
+                                     traceable, format_options)
         display_node.replace_self(new_nodes)
 
 
@@ -338,7 +318,7 @@ class TraceableDisplayHiddenFormatter(TraceableDisplayFormatterBase):
 # Setup this extension part
 
 TraceableDisplayProcessor.register_formatter("admonition",
-    TraceableDisplayAdmonitionFormatter())
+    TraceableDisplayAdmonitionFormatter(), default=True)
 TraceableDisplayProcessor.register_formatter("table",
     TraceableDisplayTableFormatter())
 TraceableDisplayProcessor.register_formatter("hidden",

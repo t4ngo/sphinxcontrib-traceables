@@ -38,12 +38,12 @@ class TraceableGraphDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
         node = traceable_graph()
-        node.docname = env.docname
-        node.lineno = self.lineno
-        node["traceable-tags"] = self.options["tags"]
-        node["traceable-relationships"] = self.options.get("relationships")
+        node["source"] = env.docname
+        node["line"] = self.lineno
+        node["traceables-tags"] = self.options["tags"]
+        node["traceables-relationships"] = self.options.get("relationships")
         caption = self.options.get("caption") or "Traceable graph"
-        node["traceable-caption"] = caption
+        node["traceables-caption"] = caption
         figure_node = graphviz.figure_wrapper(self, node, caption)
         return [figure_node]
 
@@ -61,7 +61,7 @@ class GraphProcessor(ProcessorBase):
     def process_doctree(self, doctree, docname):
         for graph_node in doctree.traverse(traceable_graph):
             # Determine graph's starting traceables.
-            start_tags = graph_node["traceable-tags"]
+            start_tags = graph_node["traceables-tags"]
             start_traceables = self.get_start_traceables(start_tags,
                                                          graph_node)
             if not start_traceables:
@@ -70,13 +70,13 @@ class GraphProcessor(ProcessorBase):
                 self.env.warn_node(message, graph_node)
                 msg = nodes.system_message(message=message,
                                            level=2, type="ERROR",
-                                           source=graph_node.docname,
-                                           line=graph_node.lineno)
+                                           source=graph_node["source"],
+                                           line=graph_node["line"])
                 graph_node.replace_self(msg)
                 continue
 
             # Determine relationships to include in graph.
-            input = graph_node.get("traceable-relationships")
+            input = graph_node.get("traceables-relationships")
             relationship_length_pairs = self.parse_relationships(input)
 
             # Construct input for graph.
@@ -87,7 +87,7 @@ class GraphProcessor(ProcessorBase):
             graphviz_node = graphviz.graphviz()
             graphviz_node["code"] = self.generate_dot(graph_input)
             graphviz_node["options"] = {}
-            caption = graph_node.get("traceable-caption", "Traceables graph")
+            caption = graph_node.get("traceables-caption", "Traceables graph")
             graphviz_node["alt"] = caption
             graph_node.replace_self(graphviz_node)
 

@@ -67,8 +67,8 @@ class TraceableDirective(Directive):
         target_node["docname"] = env.docname
         target_node["refid"] = target_id
         target_node["lineno"] = self.lineno
-        target_node["traceable-tag"] = tag
-        target_node["traceable-attributes"] = attributes
+        target_node["traceables-tag"] = tag
+        target_node["traceables-attributes"] = attributes
         return target_node
 
     def create_index_node(self, env, tag, attributes):
@@ -108,10 +108,10 @@ class TraceableDirective(Directive):
         # Construct placeholder node for traceable display.
         display_node = traceable_display()
         display_node["source"] = env.docname
-        display_node["lineno"] = self.lineno
-        display_node["traceable-tag"] = tag
-        display_node["traceable-format"] = format
-        display_node["traceable-options"] = {}
+        display_node["line"] = self.lineno
+        display_node["traceables-tag"] = tag
+        display_node["traceables-format"] = format
+        display_node["traceables-options"] = {}
 
         # Insert remaining content into placeholder.
         self.state.nested_parse(self.content, self.content_offset,

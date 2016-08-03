@@ -106,8 +106,8 @@ class Traceable(object):
     def __init__(self, target_node, unresolved_tag=None):
         if target_node and not unresolved_tag:
             self.target_node = target_node
-            self.tag = target_node["traceable-tag"]
-            self.attributes = target_node["traceable-attributes"]
+            self.tag = target_node["traceables-tag"]
+            self.attributes = target_node["traceables-attributes"]
         elif unresolved_tag and not target_node:
             self.target_node = None
             self.tag = unresolved_tag
@@ -214,6 +214,60 @@ class ProcessorBase(object):
 
     def process_node(self, node, doctree, docname):
         pass
+
+
+class FormatProcessorBase(ProcessorBase):
+
+    formatters = {}
+    formatter_defaults = {}
+
+    @classmethod
+    def register_formatter(cls, name, formatter, default=False):
+        cls.formatters.setdefault(id(cls), {})[name] = formatter
+        if default:
+            cls.formatter_defaults[id(cls)] = formatter
+
+    @classmethod
+    def get_registered_formatters(cls):
+        return cls.formatters.get(id(cls), {})
+
+    @classmethod
+    def get_default_formatter(cls):
+        return cls.formatter_defaults.get(id(cls))
+
+    @classmethod
+    def directive_format_choice(cls, argument):
+        format_names = cls.get_registered_formatters().keys()
+        return directives.choice(argument, format_names)
+
+    def get_formatter(self, node, name):
+        default = self.get_default_formatter()
+        if not name and default:
+            return default
+
+        valid_formatters = self.get_registered_formatters()
+        formatter = valid_formatters.get(name)
+        if formatter:
+            return formatter
+        else:
+            message = ("Unknown formatter name: '{0}';"
+                       " available formatters: {1}"
+                       .format(name, ", ".join(valid_formatters.keys())))
+            self.env.warn_node(message, node)
+            new_nodes = [nodes.system_message(message=message,
+                                              level=2, type="ERROR",
+                                              source=node["source"],
+                                              line=node["line"])]
+            node.replace_self(new_nodes)
+            return None
+
+    def process_node(self, node, doctree, docname):
+        formatter = self.get_formatter(node, node["traceables-format"])
+        if formatter:
+            self.process_node_with_formatter(node, formatter, doctree, docname)
+
+    def process_node_with_formatter(self, node, formatter, doctree, docname):
+        raise NotImplementedError()
 
 
 # =============================================================================
