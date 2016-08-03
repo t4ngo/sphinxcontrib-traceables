@@ -12,6 +12,7 @@ from HTMLParser import HTMLParser
 def test_xml_basics(app, status, warning):
     app.builder.build_all()
     tree = ElementTree.parse(app.outdir / "index.xml")
+#    print pretty_print_xml(tree.getroot())
 
     # Verify that 2 traceables are found.
     assert len(tree.findall(".//target")) == 2
