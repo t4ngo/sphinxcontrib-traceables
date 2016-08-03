@@ -4,6 +4,7 @@
 Usage
 ******************************************************************************
 
+
 Defining traceables
 ==============================================================================
 
@@ -47,6 +48,7 @@ Traceables are defined using the ``traceable`` directive described below.
 
      - If content is given, it will be parsed as regular ReST.
 
+
 Referencing traceables
 ==============================================================================
 
@@ -60,6 +62,7 @@ Traceables can be referenced using the ``traceable`` role described below.
    .. code-block:: rest
 
       Lorem ipsum :traceable:`LOREM-IPSUM` dolor sit...
+
 
 Showing traceables matrices
 ==============================================================================
@@ -76,32 +79,51 @@ directive described below.
 
    The following options are available for this directive:
 
-   ``:relationship:`` -- name of traceables relationship
+   ``:relationship:`` -- name of traceables relationship *(required)*
       Specify which relationship between traceables to show in the
       generated matrix.
 
-   ``:format:`` -- name of format
+   ``:filter-primaries:`` -- traceable filter expression *(optional)*
+      Specify a filter to limit the primary traceables included in the
+      matrix.
+
+      If this option is not given, then all traceables that have
+      one or more relationships of the type specified by ``:relationship:``
+      will be included.
+
+   ``:filter-secondaries:`` -- traceable filter expression *(optional)*
+      Specify a filter to limit the secondary traceables included in the
+      matrix.
+
+      If this option is not given, then all traceables that have
+      one or more relationships of the reverse of the type specified by
+      ``:relationship:`` will be included.
+
+   ``:format:`` -- name of format *(optional)*
       Specify the matrix format to generate. The following
       formats are available:
 
-      - ``:format: table``
+      - ``:format: table`` *(default)*
+
         Traditional traceability table format.
         This format allows the following additional options to be set:
 
-        ``:max-columns:`` -- positive integer
+        ``:split-secondaries:`` -- positive integer
             The maximum number of columns to output.
             If more columns would have been necessary, multiple tables will be
             generated.
 
-        ``:max-rows:`` -- positive integer
+        ``:split-primaries:`` -- positive integer
             The maximum number of rows to output.
             If more rows would have been necessary, multiple tables will be
             generated.
 
       - ``:format: columns``
+
         2-column table of related traceables
 
       - ``:format: list``
+
         2-level list of related traceables
 
 For example, the directive shown below would generate a table showing
@@ -121,8 +143,12 @@ which is part of this extension's source code.
 .. image:: _static/example-matrix-table.*
    :scale: 50%
 
+
 Showing traceables graphs
 ==============================================================================
+
+This section is yet to be written...
+
 
 .. comment: ==================================================================
 
