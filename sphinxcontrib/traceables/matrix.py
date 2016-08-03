@@ -37,8 +37,14 @@ class traceable_matrix(nodes.General, nodes.Element):
             between primary and secondary traceables.
         traceables-format: The name of the format with which to display
             the data.
-        traceables-max-primaries: Format-specific option.
-        traceables-max-secondaries: Format-specific option.
+        traceables-filter-primaries: The filter expression to determine
+            which traceables are the primary set.
+        traceables-filter-secondaries: The filter expression to determine
+            which traceables are the secondary set.
+        traceables-split-primaries: If set, causes the output to be
+            split after the specified number of primary traceables.
+        traceables-split-secondaries: If set, causes the output to be
+            split after the specified number of secondary traceables.
 
     """
 
@@ -109,27 +115,58 @@ class MatrixProcessor(ProcessorBase):
         if not self.storage.is_valid_relationship(relationship):
             raise self.Error("Invalid relationship: {0}"
                              .format(relationship))
-        matrix = self.build_traceable_matrix(relationship)
+        filter1 = matrix_node.get("traceables-filter-primaries")
+        filter2 = matrix_node.get("traceables-filter-secondaries")
+        matrix = self.build_traceable_matrix(relationship, filter1, filter2)
 
-        option_keys = [("traceables-max-primaries", "max-primaries"),
-                       ("traceables-max-secondaries", "max-secondaries")]
-        options = dict((key, matrix_node.get(attribute))
-                       for (attribute, key) in option_keys)
-        format_name = matrix_node.get("traceables-format")
-        formatter = self.get_formatter_method(format_name)
+        options = {
+            "format": matrix_node.get("traceables-format"),
+            "filter-primaries":
+                matrix_node.get("traceables-filter-primaries"),
+            "filter-secondaries":
+                matrix_node.get("traceables-filter-secondaries"),
+            "split-primaries":
+                matrix_node.get("traceables-split-primaries"),
+            "split-secondaries":
+                matrix_node.get("traceables-split-secondaries"),
+        }
+        formatter = self.get_formatter_method(options["format"])
         new_node = formatter(matrix, options, docname)
         matrix_node.replace_self(new_node)
 
-    def build_traceable_matrix(self, forward):
+    def build_traceable_matrix(self, forward, filter1, filter2):
+        # Create empty relationship matrix.
         backward = self.storage.get_relationship_opposite(forward)
         matrix = TraceableMatrix(forward, backward)
-        traceables = self.storage.traceables_set
-        for traceable in traceables:
-            relatives = traceable.relationships.get(forward)
-            if not relatives:
-                continue
-            for relative in relatives:
-                matrix.add_traceable_pair(traceable, relative)
+
+        # Prepare for filtering.
+        traceables = sorted(self.storage.traceables_set,
+                            key=lambda t: t.tag)
+        filter = TraceablesFilter(traceables)
+
+        # Apply filter to determine which traceables are valid primaries.
+        if filter1:
+            valid_primaries = filter.filter(filter1)
+            for primary in valid_primaries:
+                matrix.add_primary(primary)
+        else:
+            valid_primaries = traceables
+
+        # Apply filter to determine which traceables are valid secondaries.
+        if filter2:
+            valid_secondaries = filter.filter(filter2)
+            for secondary in valid_secondaries:
+                matrix.add_secondary(secondary)
+        else:
+            valid_secondaries = traceables
+
+        # Add related pairs to the matrix.
+        for primary in valid_primaries:
+            secondaries = primary.relationships.get(forward) or ()
+            for secondary in secondaries:
+                if secondary in valid_secondaries:
+                    matrix.add_traceable_pair(primary, secondary)
+
         return matrix
 
     def create_list_table(self, matrix, options, docname):
@@ -190,8 +227,8 @@ class MatrixProcessor(ProcessorBase):
         return table
 
     def create_splittable_cross_table(self, matrix, options, docname):
-        max_primaries = options.get("max-primaries")
-        max_secondaries = options.get("max-secondaries")
+        max_primaries = options.get("split-primaries")
+        max_secondaries = options.get("split-secondaries")
         subtables = []
         for submatrix in matrix.split(max_secondaries, max_primaries):
             subtable = self.create_cross_table(submatrix, options, docname)
@@ -333,10 +370,12 @@ class TraceableMatrixDirective(Directive):
     required_arguments = 0
     optional_arguments = 0
     option_spec = {
-        "relationship": directives.unchanged_required,
         "format": MatrixProcessor.directive_format_choice,
-        "max-columns": directives.nonnegative_int,
-        "max-rows": directives.nonnegative_int,
+        "relationship": directives.unchanged_required,
+        "filter-primaries": directives.unchanged,
+        "filter-secondaries": directives.unchanged,
+        "split-primaries": directives.nonnegative_int,
+        "split-secondaries": directives.nonnegative_int,
     }
 
     def run(self):
@@ -345,10 +384,8 @@ class TraceableMatrixDirective(Directive):
         node.docname = env.docname
 #        node.source = env.docname
         node.line = self.lineno
-        node["traceables-relationship"] = self.options["relationship"]
-        node["traceables-format"] = self.options.get("format")
-        node["traceables-max-secondaries"] = self.options.get("max-columns")
-        node["traceables-max-primaries"] = self.options.get("max-rows")
+        for option in self.option_spec.keys():
+            node["traceables-" + option] = self.options.get(option)
         return [node]
 
 
