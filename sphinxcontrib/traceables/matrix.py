@@ -11,6 +11,60 @@ from docutils.parsers.rst import Directive, directives
 from sphinx.util.texescape import tex_escape_map
 
 from .infrastructure import ProcessorBase, TraceablesFilter
+from .utils import passthrough, latex_escape
+
+
+# =============================================================================
+# Node types
+
+class traceable_list(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a list of traceables.
+
+    Attributes:
+        traceable-filter: The filter expression to determine which
+            traceables to include in the output.
+
+    """
+
+    pass
+
+
+class traceable_matrix(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a traceables matrix.
+
+    Attributes:
+        traceables-relationship: The name of the relationship to display
+            between primary and secondary traceables.
+        traceables-format: The name of the format with which to display
+            the data.
+        traceables-max-primaries: Format-specific option.
+        traceables-max-secondaries: Format-specific option.
+
+    """
+
+    pass
+
+
+class traceable_matrix_crosstable(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a builder-specific matrix.
+
+    Attributes:
+        traceables-matrix: Instance of :obj:`TraceableMatrix` storing
+            data to be presented in the output.
+
+    """
+
+    pass
+
+
+class traceable_checkmark(nodes.General, nodes.Element):
+    """Placeholder node to be replaced by a builder-specific checkmark symbol.
+
+    This node type has no traceable-specific attributes.
+
+    """
+
+    pass
 
 
 # =============================================================================
@@ -34,9 +88,14 @@ class ListProcessor(ProcessorBase):
             new_node = nodes.bullet_list()
             for traceable in filtered_traceables:
                 item_node = nodes.list_item()
-                item_node += traceable.make_reference_node(
-                    self.app.builder, docname)
                 new_node += item_node
+                inline = nodes.inline()
+                item_node += inline
+                inline += traceable.make_reference_node(
+                    self.app.builder, docname)
+                if traceable.has_title:
+                    title = u" " + traceable.title
+                    inline += nodes.inline(title, title)
             list_node.replace_self(new_node)
 
 
@@ -250,59 +309,6 @@ class MatrixProcessor(ProcessorBase):
 
 
 # =============================================================================
-# Node types
-
-class traceable_list(nodes.General, nodes.Element):
-    """Placeholder node to be replaced by a list of traceables.
-
-    Attributes:
-        traceable-filter: The filter expression to determine which
-            traceables to include in the output.
-
-    """
-
-    pass
-
-
-class traceable_matrix(nodes.General, nodes.Element):
-    """Placeholder node to be replaced by a traceables matrix.
-
-    Attributes:
-        traceables-relationship: The name of the relationship to display
-            between primary and secondary traceables.
-        traceables-format: The name of the format with which to display
-            the data.
-        traceables-max-primaries: Format-specific option.
-        traceables-max-secondaries: Format-specific option.
-
-    """
-
-    pass
-
-
-class traceable_matrix_crosstable(nodes.General, nodes.Element):
-    """Placeholder node to be replaced by a builder-specific matrix.
-
-    Attributes:
-        traceables-matrix: Instance of :obj:`TraceableMatrix` storing
-            data to be presented in the output.
-
-    """
-
-    pass
-
-
-class traceable_checkmark(nodes.General, nodes.Element):
-    """Placeholder node to be replaced by a builder-specific checkmark symbol.
-
-    This node type has no traceable-specific attributes.
-
-    """
-
-    pass
-
-
-# =============================================================================
 # Directives
 
 class TraceableListDirective(Directive):
@@ -349,17 +355,6 @@ class TraceableMatrixDirective(Directive):
 # =============================================================================
 # Node visitor functions
 
-def visit_passthrough(self, node):
-    pass
-
-
-def depart_passthrough(self, node):
-    pass
-
-
-passthrough = (visit_passthrough, depart_passthrough)
-
-
 def visit_traceable_matrix_crosstable_latex(self, node):
     matrix = node["traceables-matrix"]
     num_columns = len(matrix.secondaries)
@@ -399,12 +394,8 @@ def visit_traceable_checkmark_latex(self, node):
     raise nodes.SkipNode
 
 
-def latex_escape(text):
-    return six.text_type(text).translate(tex_escape_map)
-
-
 # =============================================================================
-# Helper class for traceable relationships
+# Helper class for traceable relationship matrices
 
 class TraceableMatrix(object):
 
@@ -507,7 +498,7 @@ class TraceableMatrix(object):
 
 
 # =============================================================================
-# Setup extension
+# Setup this extension part
 
 def setup(app):
     app.add_node(traceable_list)
