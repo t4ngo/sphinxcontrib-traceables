@@ -103,6 +103,19 @@ class FilterVisitor(ast.NodeVisitor):
             raise FilterError(node, "Invalid operator of type {0}"
                                     .format(operator.__class__.__name__))
 
+    def visit_BoolOp(self, node):
+        # Operators described here:
+        # https://greentreesnakes.readthedocs.org/en/latest/nodes.html#BoolOp
+        values = [self.visit(child) for child in node.values]
+        if isinstance(node.op, ast.And):
+            return all(values)
+        elif isinstance(node.op, ast.Or):
+            return any(values)
+        else:
+            # No other operators are  present in Python, but just in case.
+            raise FilterError(node, "Invalid operator of type {0}"
+                                    .format(operator.__class__.__name__))
+
     def generic_visit(self, node):
         raise FilterError(node, "Invalid input of type {0}"
                                 .format(node.__class__.__name__))

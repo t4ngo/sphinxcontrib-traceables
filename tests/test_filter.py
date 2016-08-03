@@ -77,6 +77,18 @@ def test_filter_operators():
     assert match("version not in []") is True
     assert match("version not in [1.1, 1.2, -4]") is False
 
+    # Operator "and"
+    assert match("color == 'red' and version > 1.1") is True
+    assert match("color == 'red' and version > 2.0") is False
+    assert match("color == 'blue' and version > 1.1") is False
+    assert match("color == 'blue' and version > 2.0") is False
+ 
+    # Operator "or"
+    assert match("color == 'red' or version > 1.1") is True
+    assert match("color == 'red' or version > 2.0") is True
+    assert match("color == 'blue' or version > 1.1") is True
+    assert match("color == 'blue' or version > 2.0") is False
+ 
     # Valid but unsupported operator
     assert_raises(FilterError, match, "version is 1.2")
     assert_raises(FilterError, match, "1.0 < version <= 1.2")
