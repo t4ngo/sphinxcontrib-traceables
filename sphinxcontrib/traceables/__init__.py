@@ -2,6 +2,7 @@
 import infrastructure
 import display
 import traceables
+import list
 import matrix
 import graph
 
@@ -17,6 +18,7 @@ def setup(app):
     traceables.infrastructure.setup(app)
     traceables.display.setup(app)
     traceables.traceables.setup(app)
+    traceables.list.setup(app)
     traceables.matrix.setup(app)
     traceables.graph.setup(app)
 
@@ -26,7 +28,7 @@ def setup(app):
         traceables.traceables.RelationshipsProcessor,
         traceables.display.TraceableDisplayProcessor,
         traceables.traceables.XrefProcessor,
-        traceables.matrix.ListProcessor,
+        traceables.list.ListProcessor,
         traceables.matrix.MatrixProcessor,
         traceables.graph.GraphProcessor,
     ])
