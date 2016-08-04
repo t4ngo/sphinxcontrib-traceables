@@ -9,8 +9,7 @@ build/
 dist/
 
 # Sphinx documentation
-docs/_build/
-example/_build/
+**/_build/
 
 # Test artifacts
 .coverage
