@@ -55,20 +55,20 @@ The directive shown above gives the following output:
    :relationship: children
    :format: table
 
-Table format with max-columns
+Table format with split-secondaries
 ------------------------------------------------------------------------------
 
 The source listing below displays a ``traceable-matrix`` directive with
-``table`` format with ``max-columns`` specified::
+``table`` format with ``split-secondaries`` specified::
 
     .. traceable-matrix::
        :relationship: children
        :format: table
-       :max-columns: 2
+       :split-secondaries: 4
 
 The directive shown above gives the following output:
 
 .. traceable-matrix::
    :relationship: children
    :format: table
-   :max-columns: 2
+   :split-secondaries: 4
