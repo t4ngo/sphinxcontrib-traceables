@@ -19,6 +19,7 @@ from sphinx.util.nodes import make_refnode
 
 from .infrastructure import ProcessorBase, Traceable, TraceablesStorage
 from .display import traceable_display
+from .utils import is_valid_traceable_attribute_name
 
 
 # =============================================================================
@@ -83,7 +84,24 @@ class TraceableDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
         tag = self.arguments[0]
-        attributes = self.options
+        messages = []
+
+        # Verify the supplied attributes are valid.
+        attributes = {}
+        for name, value in self.options.items():
+            if is_valid_traceable_attribute_name(name):
+                attributes[name] = value
+            else:
+                message = ("Traceable attribute has invalid syntax: {0!r}"
+                           .format(name))
+                env.warn(env.docname, message, self.lineno)
+                msg = nodes.system_message(message=message,
+                                           level=2, type="ERROR",
+                                           source=env.docname,
+                                           line=self.lineno)
+                messages.append(msg)
+
+        # Determine traceable display format.
         format = attributes.pop("format", "admonition")
 
         target_node = self.create_target_node(env, tag, attributes)
@@ -117,7 +135,7 @@ class TraceableDirective(Directive):
         self.state.nested_parse(self.content, self.content_offset,
                                 display_node)
 
-        return [target_node, index_node, display_node]
+        return [target_node, index_node, display_node] + messages
 
 
 # =============================================================================

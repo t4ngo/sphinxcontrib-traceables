@@ -1,7 +1,7 @@
 
 .. traceable:: SAGITTA
   :title: Sagitta
-  :random-attribute: Some random value
+  :random_attribute: Some random value
 
 .. traceable:: AQUILA
   :parents: SAGITTA

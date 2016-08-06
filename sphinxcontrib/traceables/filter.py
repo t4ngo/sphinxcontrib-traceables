@@ -5,6 +5,7 @@ The ``filter`` module: Filter expression processing
 """
 
 import os
+import re
 import ast
 
 
@@ -23,6 +24,8 @@ class FilterError(ValueError):
 
 class ExpressionMatcher(object):
 
+    identifier_re = re.compile(r"^[^\d\W]\w*\Z")
+
     def __init__(self, expression_string):
         self.expression_string = expression_string
         try:
@@ -31,6 +34,13 @@ class ExpressionMatcher(object):
             raise FilterError(None, "Invalid filter syntax")
 
     def matches(self, identifier_values):
+        # Verify that the supplied identifiers have a valid syntax.
+        for identifier in identifier_values.keys():
+            if not self.identifier_re.match(identifier):
+                raise FilterError(None, "Invalid identifier syntax: {0!r}"
+                                        .format(identifier))
+
+        # Perform matching.
         visitor = FilterVisitor(identifier_values)
         return visitor.visit(self.expression_tree)
 

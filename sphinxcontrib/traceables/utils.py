@@ -1,3 +1,4 @@
+import re
 import six
 from sphinx.util.texescape import tex_escape_map
 
@@ -14,6 +15,19 @@ def depart_passthrough(translator, node):
 
 
 passthrough = (visit_passthrough, depart_passthrough)
+
+
+# =============================================================================
+# Input checking utilities.
+
+identifier_re = re.compile(r"^[^\d\W]\w*\Z")
+
+
+def is_valid_traceable_attribute_name(input):
+    if identifier_re.match(input):
+        return True
+    else:
+        return False
 
 
 # =============================================================================

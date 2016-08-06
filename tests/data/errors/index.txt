@@ -9,3 +9,8 @@
   :parents: SAGITTA
 
 The traceable :traceable:`SAGITTA` is doubly defined.
+
+.. traceable:: INVALID-ATTRIBUTE
+  :invalid-syntax: foo
+
+  This traceable has an attribute with an invalid syntax.

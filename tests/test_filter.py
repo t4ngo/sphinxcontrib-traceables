@@ -97,6 +97,16 @@ def test_filter_operators():
     assert_raises(FilterError, match, "version INVALID 1.2")
 
 
+def test_filter_special_symbols():
+    identifier_values = {
+        "color": "red",
+        "foo-bar": 1.2,
+    }
+
+    matcher = ExpressionMatcher("color == 'red'")
+    assert_raises(FilterError, matcher.matches, identifier_values)
+
+
 # =============================================================================
 # Tests for filtering of traceables
 
