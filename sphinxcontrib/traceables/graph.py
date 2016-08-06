@@ -173,10 +173,13 @@ class GraphProcessor(ProcessorBase):
         # Process line wrapping.
         line_wrap = style.pop("textwrap", False)
         if line_wrap:
-            title = " \\n ".join(textwrap.wrap(title, line_wrap))
+            title = " <br/> ".join(textwrap.wrap(title, line_wrap))
+            text = "<<b>" + tag + "</b><br/> " + title + ">"
+        else:
+            text = "<<b>" + tag + ":</b> " + title + ">"
 
         # Add dot node.
-        dot.node(tag, title, **style)
+        dot.node(tag, text, **style)
 
 
 # =============================================================================
@@ -231,7 +234,7 @@ class GraphInput(object):
 default_graph_styles = {
     "__default__": {
         "shape": "box",
-        "textwrap": 16,
+        "textwrap": 24,
     },
     "__unresolved__": {
         "shape": "box",
