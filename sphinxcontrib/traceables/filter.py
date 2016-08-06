@@ -19,11 +19,9 @@ class FilterError(ValueError):
         self.node = node
 
 
-class FilterFail(ValueError):
+class FilterFail(FilterError):
 
-    def __init__(self, node, message):
-        super(FilterFail, self).__init__(message)
-        self.node = node
+    pass
 
 
 # =============================================================================
