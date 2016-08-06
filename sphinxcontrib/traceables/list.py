@@ -182,7 +182,7 @@ class TraceableListDirective(Directive):
 # Setup this extension part
 
 ListProcessor.register_formatter("table", TableListFormatter(), default=True)
-ListProcessor.register_formatter("list", BulletListFormatter())
+ListProcessor.register_formatter("bullets", BulletListFormatter())
 
 def setup(app):
     app.add_node(traceable_list)
