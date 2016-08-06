@@ -18,7 +18,7 @@ from sphinx.util.compat import make_admonition
 from sphinx.util.nodes import make_refnode
 from sphinx.util.osutil import copyfile
 
-from .filter import ExpressionMatcher
+from .filter import ExpressionMatcher, FilterError, FilterFail
 
 
 # =============================================================================
@@ -280,10 +280,15 @@ class TraceablesFilter(object):
 
     def filter(self, expression_string):
         matcher = ExpressionMatcher(expression_string)
+
         matching_traceables = []
         for traceable in self.traceables:
-            if self.traceable_matches(matcher, traceable):
-                matching_traceables.append(traceable)
+            try:
+                if self.traceable_matches(matcher, traceable):
+                    matching_traceables.append(traceable)
+            except FilterFail, error:
+                continue
+
         return matching_traceables
 
     def traceable_matches(self, matcher, traceable):

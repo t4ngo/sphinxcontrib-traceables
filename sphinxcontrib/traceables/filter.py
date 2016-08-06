@@ -19,6 +19,13 @@ class FilterError(ValueError):
         self.node = node
 
 
+class FilterFail(ValueError):
+
+    def __init__(self, node, message):
+        super(FilterFail, self).__init__(message)
+        self.node = node
+
+
 # =============================================================================
 # Filter class
 
@@ -57,7 +64,7 @@ class FilterVisitor(ast.NodeVisitor):
         if len(node.body) == 0:
             raise FilterError(node, "Filter invalid because it is empty")
         elif len(node.body) != 1:
-            raise FilterError(node, "Filter invalid because has multiple"
+            raise FilterError(node, "Filter invalid because it has multiple"
                                     " expressions")
         return self.visit(node.body[0])
 
@@ -69,8 +76,8 @@ class FilterVisitor(ast.NodeVisitor):
         if identifier in self.identifier_values:
             return self.identifier_values[identifier]
         else:
-            raise FilterError(node, "Invalid identifier: {0}"
-                                    .format(identifier))
+            raise FilterFail(node, "Unknown identifier: {0}"
+                                   .format(identifier))
 
     def visit_Num(self, node):
         return node.n
