@@ -2,4 +2,5 @@ Filtered list
 ==============================================================================
 
 .. traceable-list::
-   :filter: color == "red"
+    :format: bullets
+    :filter: color == "red"
