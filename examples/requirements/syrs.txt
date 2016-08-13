@@ -1,0 +1,205 @@
+*******************************************************************************
+System Requirements Specification
+*******************************************************************************
+
+
+Introduction
+===============================================================================
+
+Document Purpose
+-------------------------------------------------------------------------------
+
+This System Requirements Specification document...
+
+This document's purpose is twofold: on the one hand, to provide clear
+requirements for development of this extension, and on the other hand, to
+demonstrate how this extension allows requirements to be captured within
+Sphinx-based documentation.
+
+Document Scope
+-------------------------------------------------------------------------------
+
+This document describes the |sphinxcontrib-traceables| extension. It is limited
+to system-level aspects.
+
+Document Structure
+-------------------------------------------------------------------------------
+
+The following chapters describe...
+
+
+Stakeholder Requirements
+===============================================================================
+
+The |StRS| defined the following stakeholder requirements:
+
+.. traceable-list::
+    :filter: category == "StakeholderReq"
+
+
+System Requirements
+===============================================================================
+
+Functional Requirements
+-------------------------------------------------------------------------------
+
+.. traceable:: REQ-TRACEDIRECTIVE
+    :title: Traceables can be defined using reST directive
+    :category: SysReq
+    :parents: STRQ-DEFINETRCBLS
+    :requirement_type: functional
+    :verification_method: ci-test
+
+    It must be possible to define a traceable using a reST directive.
+
+    Directive options define the traceable's attributes. Certain option keys
+    have special meaning:
+
+    - ``:title:`` sets the traceable's title attribute
+    - Options with the name of a valid relationship define the traceable's
+      relationships with other traceables
+
+    Directive content defines arbitrary information that is associated with
+    the traceable. It is shown in line where the traceable is displayed
+    in full, but otherwise not used in traceable processing, filtering, etc.
+    The content is parsed as reST code.
+
+.. traceable-graph::
+    :tags: REQ-TRACEDIRECTIVE
+    :relationships: parents, children
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: REQ-TRACELISTS
+    :title: Lists can be generated showing traceables and their attributes
+    :category: SysReq
+    :parents: STRQ-SHOWTRACES
+    :requirement_type: functional
+    :verification_method: ci-test
+
+    It must be possible to generate lists of traceables using a reST
+    directive. The directive's options allow filtering and formatting of
+    the output.
+
+.. traceable-graph::
+    :tags: REQ-TRACELISTS
+    :relationships: parents, children
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: REQ-TRACEMATRICES
+    :title: Matrices can be generated showing relationships between traceables
+    :category: SysReq
+    :parents: STRQ-SHOWTRACES
+    :requirement_type: functional
+    :verification_method: ci-test
+    :format: table
+
+    It must be possible to generate matrices of traceables using a reST
+    directive. The directive's options allow filtering and formatting of
+    the output.
+
+.. traceable-graph::
+    :tags: REQ-TRACEMATRICES
+    :relationships: parents, children
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: REQ-TRACEGRAPHS
+    :title: Graphs can be generated showing relationships between traceables
+    :category: SysReq
+    :parents: STRQ-SHOWTRACES
+    :requirement_type: functional
+    :verification_method: ci-test
+
+.. traceable-graph::
+    :tags: REQ-TRACEGRAPHS
+    :relationships: parents, children
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: REQ-
+    :title: 
+    :category: SysReq
+    :requirement_type: functional
+    :parents: STRQ-
+    :verification_method: ci-test
+
+.. traceable-graph::
+    :tags: REQ-
+    :relationships: parents, children
+
+Usability requirements
+-------------------------------------------------------------------------------
+
+.. traceable:: REQ-ERRORMESSAGES
+    :title: Helpful error messages are generated upon incorrect usage
+        of this extension
+    :category: SysReq
+    :requirement_type: usability
+    :parents: STRQ-CLEARERRMSG
+    :verification_method: ci-test
+
+.. traceable-graph::
+    :tags: REQ-ERRORMESSAGES
+    :relationships: parents, children
+
+Documentation Requirements
+-------------------------------------------------------------------------------
+
+.. traceable:: REQ-INSTALLINSTR
+    :title: User docs contain installation instructions
+    :category: SysReq
+    :requirement_type: documentation
+    :parents: STRQ-USERDOCS
+    :verification_method: doc-review
+
+.. traceable-graph::
+    :tags: REQ-INSTALLINSTR
+    :relationships: parents, children
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: REQ-USAGEINSTR
+    :title: User docs contain usage instructions
+    :category: SysReq
+    :requirement_type: documentation
+    :parents: STRQ-USERDOCS
+    :verification_method: doc-review
+
+    The user documentation must describe how to use the features provided by
+    this extension. It must cover at least all  features as stated by the
+    functional requirements:
+
+    .. traceable-list::
+        :filter: category == "SysReq" and requirement_type == "functional"
+        :format: bullets
+
+.. traceable-graph::
+    :tags: REQ-USAGEINSTR
+    :relationships: parents, children
+
+
+Traceability
+===============================================================================
+
+.. traceable-matrix::
+    :format: table
+    :relationship: children
+    :filter-primaries: category == "StakeholderReq"
+    :filter-secondaries: category == "SysReq"
+
+List of system requirements:
+
+.. traceable-list::
+    :format: table
+    :filter: category == "SysReq"
+    :attributes: verification_method
+
+
+.. |sphinxcontrib-traceables| replace::
+    `sphinxcontrib-traceables <https://github.com/t4ngo/sphinxcontrib-traceables>`__
+
+.. |OpsCon| replace:: :abbr:`OpsCon (Operational Concept)`
+
+.. |StRS| replace:: :doc:`strs`

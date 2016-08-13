@@ -1,0 +1,387 @@
+*******************************************************************************
+Stakeholders Requirements Specification
+*******************************************************************************
+
+
+Introduction
+===============================================================================
+
+Document Purpose
+-------------------------------------------------------------------------------
+
+This Stakeholders Requirements Specification document identifies the parties
+interested in the |sphinxcontrib-traceables| extension, describes their needs,
+combines the diverse needs in an |OpsCon|, and derives stakeholder
+requirements.
+
+This document's purpose is twofold: on the one hand, to ensure the
+extension meets its stakeholders' expectations, and on the other hand, to
+demonstrate how this extension allows requirements management within
+Sphinx-based documentation.
+
+Document Scope
+-------------------------------------------------------------------------------
+
+This document describes the |sphinxcontrib-traceables| extension. It is limited
+to stakeholder-level aspects and therefore doesn't cover technical details.
+
+Document Structure
+-------------------------------------------------------------------------------
+
+The following chapters describe the stakeholders and their needs, combine those
+needs into a single |OpsCon|, and derive stakeholder requirements.
+
+
+Stakeholders and Their Needs
+===============================================================================
+
+Extension users
+-------------------------------------------------------------------------------
+
+.. traceable:: STKH-USERS
+    :title: Extension users
+    :category: Stakeholder
+
+    This stakeholder represents users of the |sphinxcontrib-traceables|
+    extension, i.e. people who write Sphinx-based documentation.
+
+This extension adds traceability functionality to Sphinx. Its users can
+apply such traceability for various different purposes, such as for example:
+
+*Requirements management*
+  Capturing requirements in documentation; tracing the relationships
+  between various types of requirements; generating lists, tables, and
+  diagrams of requirements, and filtering those based on flexible properties
+  of the requirements; tracing requirements to test cases; etc.
+
+*Process descriptions*
+  Describing processes as networks of linked items, i.e.
+  "Process 1 |map| Artifact A |map| Process 2 |map| Artifact B |map| ...",
+  and keeping the textual description there of in line with diagrams by
+  automatically generating diagrams, tables, relationships, etc. from
+  the textual description.
+
+The users' needs are that this extension provides the functionality they want
+and is easy to use:
+
+- Desired functionality
+
+  - Define traceable items and their attributes at arbitrary places within Sphinx documentation
+  - Define relationships between traceable items
+  - Generate lists of traceable items which are flexibly filtered
+  - Generate various output formats showing the relationship between traceable items, such as traceability matrices and graphs
+
+- Ease-of-use
+
+  - Easy installation
+  - Intuitive usage
+  - Informative error messages
+
+These user needs are captured in the |OpsCon| and stakeholder requirements
+below.
+
+.. traceable-graph::
+    :tags: STKH-USERS
+    :relationships: children
+
+Extension developers
+-------------------------------------------------------------------------------
+
+.. traceable:: STKH-DEVS
+    :title: Extension developers
+    :category: Stakeholder
+
+    This stakeholder represents developers of the |sphinxcontrib-traceables|
+    extension, i.e. people who create, expand, and maintain it.
+
+The developers' needs are that this extension is designed well (easy to
+expand, easy to maintain, fun to work on, etc.), well documented (easy to
+understand), and well tested (easy to verify changes don't break it).
+Those needs are captured in the |OpsCon| below.
+
+.. traceable-graph::
+    :tags: STKH-DEVS
+    :relationships: children
+
+
+Operational Concept
+===============================================================================
+
+Developer works on the extension
+-------------------------------------------------------------------------------
+
+.. traceable:: OPSCON-DEV
+    :title: Developer works on the extension
+    :category: OpsConScenario
+    :parents: STKH-DEVS
+
+This scenario covers a developer who works on this extension, expanding its
+functionality, fixing bugs, writes documentation for it, etc.
+
+*Further details for this scenario are yet to be written.*
+
+Developer releases the extension
+-------------------------------------------------------------------------------
+
+.. traceable:: OPSCON-RELEASE
+    :title: Developer releases the extension
+    :category: OpsConScenario
+    :parents: STKH-DEVS
+
+This scenario covers a developer who creates a formal release of this
+extension and publishes that so that users can install the new release
+(see :traceable:`OPSCON-INSTALL`).
+
+*Further details for this scenario are yet to be written.*
+
+User installs the extension
+-------------------------------------------------------------------------------
+
+.. traceable:: OPSCON-INSTALL
+    :title: User installs the extension
+    :category: OpsConScenario
+    :parents: STKH-USERS
+
+This scenario covers a user who installs this extension. It consists of
+the following activities:
+
+#. A :traceable:`STKH-USERS` reads |sphinxcontrib-traceables| user
+   documentation, specifically the installation instructions.
+#. The :traceable:`STKH-USERS` uses a standard method to install this extension;
+   standard methods included here:
+
+   - Python's built-in ``pip`` tool, i.e.
+     ``pip install sphinxcontrib-traceables``
+
+.. traceable-graph::
+    :tags: OPSCON-INSTALL
+    :relationships: parents:1, children:1
+    :caption: Stakeholders involved with this scenario and requirements
+      derived from it
+
+User writes documentation
+-------------------------------------------------------------------------------
+
+.. traceable:: OPSCON-USAGE
+    :title: User writes documentation with traceables
+    :category: OpsConScenario
+    :parents: STKH-USERS
+
+This scenario covers a user who writes Sphinx-based documentation that
+contains traceables and other functionality provided by this extension.
+It consists of the following activities:
+
+#. A :traceable:`STKH-USERS` reads |sphinxcontrib-traceables| user
+   documentation to learn how to use the extension's functionality.
+#. The :traceable:`STKH-USERS` writes input for Sphinx.
+   The |sphinxcontrib-traceables| extension provides the following
+   functionality:
+
+   - Define traceable items and their attributes at arbitrary places
+     within Sphinx documentation
+   - Define relationships between traceable items
+   - Generate lists of traceable items which are flexibly filtered
+   - Generate various output formats showing the relationship between
+     traceable items, such as traceability matrices and graphs
+
+#. The :traceable:`STKH-USERS` runs Sphinx and generates output.
+#. If the input contains errors related to traceables, then this extension
+   gives clear error messages helping the user to quickly understand and
+   fix the error.
+
+
+Stakeholder Requirements
+===============================================================================
+
+Requirements for installation and running
+-------------------------------------------------------------------------------
+
+.. traceable:: STRQ-USERDOCS
+    :title: High-quality documentation for users
+    :category: StakeholderReq
+    :parents: OPSCON-INSTALL, OPSCON-USAGE
+    :format: table
+
+    Users require documentation to help them use this extension. That
+    documentation must cover at least the following topics:
+
+    - How to install the extension (see :traceable:`OPSCON-INSTALL`)
+    - How to use traceables in their docs (see :traceable:`OPSCON-USAGE`)
+    - How to fix errors if the user incorrectly uses traceables
+      (see :traceable:`OPSCON-USAGE`)
+
+.. traceable-graph::
+    :tags: STRQ-USERDOCS
+    :relationships: parents
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: STRQ-PIPINSTALL
+    :title: Easy installation using pip
+    :category: StakeholderReq
+    :parents: OPSCON-INSTALL
+    :format: table
+
+    A very common way to install Python packages is to use the ``pip`` tool.
+    It must therefore be possible for users to easily install this extension
+    using the ``pip`` tool.
+
+.. traceable-graph::
+    :tags: STRQ-PIPINSTALL
+    :relationships: parents
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: STRQ-CLEARERRMSG
+    :title: Clear error messages
+    :category: StakeholderReq
+    :parents: OPSCON-USAGE
+    :format: table
+
+    If a user makes an error in his usage of this extension, then this
+    extension should give a clear error message that helps the user quickly
+    find and fix the error (see :traceable:`OPSCON-USAGE`).
+
+    Sphinx automatically reports on general syntax errors in its input files,
+    usually written in reStructuredText format. This extension therefore does
+    not need to handle such errors.
+
+    The error messages to be generated by this extension are mainly related
+    to invalid parameters given to its directives and invalid configuration
+    settings.
+
+.. traceable-graph::
+    :tags: STRQ-CLEARERRMSG
+    :relationships: parents
+
+Requirements for functionality when writing docs with this extension
+-------------------------------------------------------------------------------
+
+.. traceable:: STRQ-DEFINETRCBLS
+    :title: Definition of traceables
+    :category: StakeholderReq
+    :parents: OPSCON-USAGE
+    :format: table
+
+    A user must be able to define traceables at arbitrary locations within
+    Sphinx source files using standard reStructuredText constructs
+    (see :traceable:`OPSCON-USAGE`).
+
+    The definition of a traceable must:
+
+    - Give a unique tag to the traceable, so that it can be referenced
+      throughout the rest of the documentation set
+    - Optionally give a title to the traceable
+    - Optionally define the traceable's relationships with other traceables
+
+      - A traceable can have zero or more relationships with other traceables
+      - Each pair of related traceables can be related by one or more
+        relationship types
+
+    - Optionally arbitrary additional attributes can be defined for the
+      traceable
+
+      - Examples of additional attributes are: the category, version,
+        color, or foo-value of the traceable
+      - Such attributes can be used to group, filter, arrange, etc.
+        traceables
+
+.. traceable-graph::
+    :tags: STRQ-DEFINETRCBLS
+    :relationships: parents
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: STRQ-SHOWTRACES
+    :title: Generate overviews of traceables, their attributes, and their
+        relationships
+    :category: StakeholderReq
+    :parents: OPSCON-USAGE
+    :format: table
+
+    A user must be able to define traceables at arbitrary locations within
+    (see :traceable:`OPSCON-USAGE`).
+
+    The definition of a traceable must:
+
+    - Lists of traceables and their attributes
+    - Tables and nested lists showing related traceables
+    - Graphs showing the relationships between traceables
+
+.. traceable-graph::
+    :tags: STRQ-SHOWTRACES
+    :relationships: parents
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: STRQ-CONFIGRELTYPES
+    :title: Configurable relationship types between traceables
+    :category: StakeholderReq
+    :parents: OPSCON-USAGE
+    :format: table
+
+    It must be possible to configure the types of relationships that are
+    valid for a documentation set (see :traceable:`OPSCON-USAGE`).
+
+    The valid relationship types can be configured via Sphinx's standard
+    configuration method, namely in the `build configuration file`_.
+
+.. _build configuration file: http://www.sphinx-doc.org/en/stable/config.html
+
+.. traceable-graph::
+    :tags: STRQ-CONFIGRELTYPES
+    :relationships: parents
+
+Requirements for developers working on this extension
+-------------------------------------------------------------------------------
+
+.. traceable:: STRQ-DEVDOCS
+    :title: High-quality documentation for developers
+    :category: StakeholderReq
+    :parents: OPSCON-DEV, OPSCON-RELEASE
+    :format: table
+
+    Developers require documentation to help them understand and improve
+    this extension. That documentation must cover at least the following
+    topics:
+
+    - How this extension is internally structured, so that its workings
+      can easily be understood and so that modifications/improvements will be
+      implemented in-line with its design philosophy
+      (see :traceable:`OPSCON-DEV`)
+    - How to submit modifications/improvements/bug fixes for review and,
+      if accepted, inclusion in the central repository
+      (see :traceable:`OPSCON-DEV`)
+    - How to create and publish a formal release of this extension
+      (see :traceable:`OPSCON-RELEASE`)
+
+.. traceable-graph::
+    :tags: STRQ-DEVDOCS
+    :relationships: parents
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: STRQ-TESTS
+    :title: High-quality tests of this extension's functionality
+    :category: StakeholderReq
+    :parents: OPSCON-DEV, OPSCON-RELEASE
+    :format: table
+
+.. traceable-graph::
+    :tags: STRQ-TESTS
+    :relationships: parents
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: STRQ-CONTINTEGR
+    :title: Continuous integration setup for this extension
+    :category: StakeholderReq
+    :parents: OPSCON-DEV, OPSCON-RELEASE
+    :format: table
+
+
+.. |sphinxcontrib-traceables| replace::
+    `sphinxcontrib-traceables <https://github.com/t4ngo/sphinxcontrib-traceables>`__
+
+.. |OpsCon| replace::
+    :abbr:`OpsCon (Operational Concept)`
