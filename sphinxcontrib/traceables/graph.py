@@ -144,8 +144,21 @@ class GraphProcessor(ProcessorBase):
         dot.attr("node", fontname="helvetica", fontsize="7.5")
         dot.attr("edge", fontname="helvetica", fontsize="7.5")
 
+        # Group traceables by their category.
+        categorized = {}
         for traceable in graph_input.traceables:
-            self.add_dot_traceable(dot, traceable)
+            category = traceable.attributes.get("category")
+            categorized.setdefault(category, []).append(traceable)
+
+        # Create subgraphs for each category so that its traceables lineup.
+        for category, traceables in categorized.items():
+            subgraph = Digraph(str(category))
+            subgraph.body.append("rank=same")
+            for traceable in traceables:
+                self.add_dot_traceable(subgraph, traceable)
+            dot.subgraph(subgraph)
+
+        # Add the relationships between traceables.
         for relationship_info in graph_input.relationships:
             traceable1, traceable2, relationship, direction = relationship_info
             src = traceable1.tag if direction >= 0 else traceable2.tag
