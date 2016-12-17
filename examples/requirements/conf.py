@@ -9,6 +9,7 @@ import os
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.graphviz',
+    'sphinx.ext.viewcode',
     'sphinxcontrib.traceables',
 ]
 
@@ -38,8 +39,11 @@ rst_prolog = '''
 # Configure HTML output
 
 html_theme = 'sphinx_rtd_theme'
-html_theme = 'classic'
+#html_theme = 'classic'
+#html_theme = 'pyramid'
+#html_theme = 'haiku'
 html_static_path = ['_static']
+html_copy_source = True
 html_show_sourcelink = True            # Link to source from pages.
 
 #latex_elements = {

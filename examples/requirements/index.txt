@@ -6,7 +6,16 @@ Contents
 ==============================================================================
 
 .. toctree::
+    :maxdepth: 2
 
     strs
+
+.. toctree::
+    :maxdepth: 2
+
     syrs
+
+.. toctree::
+    :maxdepth: 2
+
     verif

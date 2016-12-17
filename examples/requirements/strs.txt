@@ -182,12 +182,56 @@ It consists of the following activities:
    - Define relationships between traceable items
    - Generate lists of traceable items which are flexibly filtered
    - Generate various output formats showing the relationship between
-     traceable items, such as traceability matrices and graphs
+     traceable items, such as traceability matrices and graphs;
+     see :traceable:`OPSCON-GRAPHS` for a scenario describing generation
+     of graphs in more detail
 
 #. The :traceable:`STKH-USERS` runs Sphinx and generates output.
 #. If the input contains errors related to traceables, then this extension
    gives clear error messages helping the user to quickly understand and
    fix the error.
+
+User generate graphs showing relationships between traceables
+-------------------------------------------------------------------------------
+
+.. traceable:: OPSCON-GRAPHS
+    :title: User generate graphs showing relationships between traceables
+    :category: OpsConScenario
+    :parents: STKH-USERS, OPSCON-USAGE
+
+This scenario covers a user wants the output documentation to include
+generated graphs showing the relationships between traceables.
+
+Example: Show parents and children of a traceable
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this example the goal is to show the parents and the children of a given
+traceable. The desired output graph shows the traceable's parent hierarchy
+to one side, and its children hierarchy to the other side.
+
+The maximum length/depth to which the hierarchies are shown should be
+configurable. If not specified, the complete hierarchies should be shown.
+
+This example includes both parent and child relationships in the output
+diagram. However, The relationship types are not "mixed", e.g. it does not
+show all children of a traceable on the "parent side" of the diagram
+and vice versa. This leads to a nontrivial specification of which traceables
+to include.
+
+Example: Hide intermediate traceables while maintaining relationship links
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This example revolves around a usage scenario where processes and their
+inputs and outputs are each represented by a traceable. A process is linked to
+another process by means of one or more of its outputs forming an input for
+the other process or vice versa.
+
+In this example the goal is to show the relationships between processes,
+but without including the inputs/outputs in the diagram. In other words,
+a diagram should be generated showing the linkages between processes without
+showing the intermediary input/output traceables. Such a diagram could be
+useful in simplifying the display of linkages between processes without
+overloading the reader with all the input/output details.
 
 
 Stakeholder Requirements
@@ -299,17 +343,38 @@ Requirements for functionality when writing docs with this extension
     :parents: OPSCON-USAGE
     :format: table
 
-    A user must be able to define traceables at arbitrary locations within
+    A user must be able to display traceables, their attributes, and their
+    relationships through out the documentation output.
     (see :traceable:`OPSCON-USAGE`).
 
-    The definition of a traceable must:
+    The following types of output must be supported:
 
+    - Displays of single traceables and their attributes
     - Lists of traceables and their attributes
     - Tables and nested lists showing related traceables
     - Graphs showing the relationships between traceables
 
 .. traceable-graph::
     :tags: STRQ-SHOWTRACES
+    :relationships: parents
+
+.. ----------------------------------------------------------------------------
+
+.. traceable:: STRQ-SPECGRAPHS
+    :title: Flexibly specify which traceables to include in graphs
+    :category: StakeholderReq
+    :parents: OPSCON-USAGE, OPSCON-GRAPHS
+    :format: table
+
+    A user must be able to specify in a flexible and powerful way which
+    traceables to be included in graph output
+    (see :traceable:`OPSCON-GRAPHS`).
+
+    The specification must support at least the usage examples given in the
+    :traceable:`OPSCON-GRAPHS` scenario.
+
+.. traceable-graph::
+    :tags: STRQ-SPECGRAPHS
     :relationships: parents
 
 .. ----------------------------------------------------------------------------

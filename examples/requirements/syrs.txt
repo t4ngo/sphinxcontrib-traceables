@@ -108,7 +108,7 @@ Functional Requirements
 .. traceable:: REQ-TRACEGRAPHS
     :title: Graphs can be generated showing relationships between traceables
     :category: SysReq
-    :parents: STRQ-SHOWTRACES
+    :parents: STRQ-SHOWTRACES, STRQ-SPECGRAPHS
     :requirement_type: functional
     :verification_method: ci-test
 
